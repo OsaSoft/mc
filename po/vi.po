@@ -1,21 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-03-04 09:25+0300\n"
-"PO-Revision-Date: 2016-03-06 21:29+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2014-09-04 10:10+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Vietnamese (http://www.transifex.com/mc/mc/language/vi/)\n"
+"Language-Team: Vietnamese (http://www.transifex.com/projects/p/mc/language/"
+"vi/)\n"
+"Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: vi\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -427,16 +428,21 @@ msgstr "Biến môi trườn TERM chưa được xác định!\n"
 msgid ""
 "Screen size %dx%d is not supported.\n"
 "Check the TERM environment variable.\n"
-msgstr "Kích thước màn hình %dx%d không được hỗ trợ.\nHãy kiểm tra biến môi trường TERM.\n"
+msgstr ""
+"Kích thước màn hình %dx%d không được hỗ trợ.\n"
+"Hãy kiểm tra biến môi trường TERM.\n"
 
+#, fuzzy
 msgid "Cannot create pipe descriptor"
-msgstr ""
+msgstr "Không thay đổi được thư mục"
 
+#, fuzzy
 msgid "Cannot parse command for pipe"
-msgstr ""
+msgstr "Không thực hiện được câu lệnh"
 
+#, fuzzy
 msgid "Cannot create pipe streams"
-msgstr ""
+msgstr "Không mở được đường ống tên (named pipe) %s\n"
 
 #, c-format
 msgid ""
@@ -444,11 +450,13 @@ msgid ""
 "%s"
 msgstr ""
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
 "Unexpected error in waitpid():\n"
 "%s"
 msgstr ""
+"Kết thúc tập tin không mong đợi\n"
+"%s"
 
 msgid "Warning"
 msgstr "Cảnh báo"
@@ -466,12 +474,7 @@ msgstr ""
 msgid "Directory cache expired for %s"
 msgstr "Cache thư mục hết hạn cho %s"
 
-#, c-format
-msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
-msgstr ""
-
-#, c-format
-msgid "%s: %s: %s %lld bytes transferred"
+msgid "bytes transferred"
 msgstr ""
 
 msgid "Starting linear transfer..."
@@ -555,7 +558,7 @@ msgid "Error"
 msgstr "Lỗi"
 
 #, c-format
-msgid "%s (%d)"
+msgid "%d: %s"
 msgstr ""
 
 msgid "&Abort"
@@ -706,7 +709,7 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr ""
 
-msgid "Two files are required to envoke the diffviewer."
+msgid "Two files are required to evoke the diffviewer."
 msgstr ""
 
 msgid "Background protocol error"
@@ -1495,7 +1498,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1854,17 +1857,14 @@ msgstr ""
 msgid "&Full file list"
 msgstr "&Đầy đủ"
 
-msgid "&Brief file list:"
-msgstr ""
+msgid "&Brief file list"
+msgstr "&Thu gọn"
 
 msgid "&Long file list"
 msgstr "&Mở rộng"
 
 msgid "&User defined:"
 msgstr "&Người dùng tự xác định:"
-
-msgid "columns"
-msgstr ""
 
 msgid "User &mini status"
 msgstr ""
@@ -1881,8 +1881,7 @@ msgstr "&Ngược lại"
 msgid "Sort order"
 msgstr "Thứ tự sắp xếp"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr ""
 
@@ -2184,10 +2183,6 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "'%s' is not a symbolic link"
-msgstr ""
-
-#, c-format
 msgid "Symlink '%s' points to:"
 msgstr ""
 
@@ -2200,6 +2195,10 @@ msgstr ""
 
 #, c-format
 msgid "edit symlink: %s"
+msgstr ""
+
+#, c-format
+msgid "'%s' is not a symbolic link"
 msgstr ""
 
 msgid "FTP to machine"
@@ -2473,7 +2472,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file \"%s\"\n"
+"Cannot read source file\"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2885,31 +2884,31 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr ""
 
 #, c-format
-msgid "Type:       %s"
+msgid "Type:      %s"
 msgstr ""
 
 msgid "non-local vfs"
 msgstr "không phải vfs cục bộ"
 
 #, c-format
-msgid "Device:     %s"
-msgstr ""
+msgid "Device:    %s"
+msgstr "Thiết bị:     %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Hệ thống tập tin: %s"
 
 #, c-format
-msgid "Accessed:   %s"
-msgstr ""
+msgid "Accessed:  %s"
+msgstr "Truy cập:     %s"
 
 #, c-format
-msgid "Modified:   %s"
-msgstr ""
+msgid "Modified:  %s"
+msgstr "Sửa đổi:      %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:    %s"
+msgid "Changed:   %s"
 msgstr ""
 
 #, c-format
@@ -2917,8 +2916,8 @@ msgid "Dev. type: major %lu, minor %lu"
 msgstr "Dạng thiết bị: major %lu, minor %lu"
 
 #, c-format
-msgid "Size:       %s"
-msgstr ""
+msgid "Size:      %s"
+msgstr "Kích thước:   %s"
 
 #, c-format
 msgid " (%ld block)"
@@ -2926,20 +2925,20 @@ msgid_plural " (%ld blocks)"
 msgstr[0] " (%ld khối)"
 
 #, c-format
-msgid "Owner:      %s/%s"
-msgstr ""
+msgid "Owner:     %s/%s"
+msgstr "Chủ sở hữu:   %s/%s"
 
 #, c-format
-msgid "Links:      %d"
-msgstr ""
+msgid "Links:     %d"
+msgstr "Liên kết:     %d"
 
 #, c-format
-msgid "Mode:       %s (%04o)"
-msgstr ""
+msgid "Mode:      %s (%04o)"
+msgstr "Quyền hạn:    %s (%04o)"
 
 #, c-format
-msgid "Location:   %Xh:%Xh"
-msgstr ""
+msgid "Location:  %Xh:%Xh"
+msgstr "Vị trí:       %Xh:%Xh"
 
 msgid "&Equal split"
 msgstr "&Kích thước bằng nhau"
@@ -3332,7 +3331,8 @@ msgid "Do you really want to execute?"
 msgstr ""
 
 msgid "User supplied format looks invalid, reverting to default."
-msgstr "Định dạng người dùng đưa ra có vẻ không thích hợp, chuyển lại thành mặc định."
+msgstr ""
+"Định dạng người dùng đưa ra có vẻ không thích hợp, chuyển lại thành mặc định."
 
 msgid "&Add new"
 msgstr "&Thêm mới"
@@ -3377,7 +3377,9 @@ msgstr "Tìm chương trình có các bit SUID/SGID"
 msgid ""
 "Cannot open the %s file for writing:\n"
 "%s\n"
-msgstr "Không mở được tập tin %s để ghi nhớ:\n%s\n"
+msgstr ""
+"Không mở được tập tin %s để ghi nhớ:\n"
+"%s\n"
 
 #, c-format
 msgid "Copy \"%s\" directory to:"
@@ -3416,7 +3418,9 @@ msgstr ""
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
-msgstr "Không ghi nhớ được vào tập tin %s:\n%s\n"
+msgstr ""
+"Không ghi nhớ được vào tập tin %s:\n"
+"%s\n"
 
 msgid "Debug"
 msgstr ""
@@ -3440,7 +3444,9 @@ msgstr ""
 msgid ""
 "File %s is not owned by root or you or is world writable.\n"
 "Using it may compromise your security"
-msgstr "Tập tin %s không thuộc quyền sở hữu của root, hay của bạn,\nhoặc ai cũng có thể ghi. Sử dụng tập tin này có thể không an toàn"
+msgstr ""
+"Tập tin %s không thuộc quyền sở hữu của root, hay của bạn,\n"
+"hoặc ai cũng có thể ghi. Sử dụng tập tin này có thể không an toàn"
 
 msgid "Format error on file Extensions File"
 msgstr ""
@@ -3495,7 +3501,15 @@ msgid ""
 "\n"
 "If you want to escape, press a single Escape key\n"
 "and wait as well."
-msgstr "Xin hãy nhấn lên %s\nvà đợi cho thông báo này biến mất.\n\nSau đó hãy nhấn một lần nữa để chắc chắn là ở bên phải\ncủa tên xuất hiện \"OK\".\n\nNếu bạn muốn dừng việc dạy phím, thì hãy nhấn\nphím Esc và cũng cần đợi một chút."
+msgstr ""
+"Xin hãy nhấn lên %s\n"
+"và đợi cho thông báo này biến mất.\n"
+"\n"
+"Sau đó hãy nhấn một lần nữa để chắc chắn là ở bên phải\n"
+"của tên xuất hiện \"OK\".\n"
+"\n"
+"Nếu bạn muốn dừng việc dạy phím, thì hãy nhấn\n"
+"phím Esc và cũng cần đợi một chút."
 
 msgid "Cannot accept this key"
 msgstr ""
@@ -3511,7 +3525,9 @@ msgstr "OK"
 msgid ""
 "It seems that all your keys already\n"
 "work fine. That's great."
-msgstr "Có vẻ như tất cả các phím của bạn\nlàm việc tốt. Thật là tuyệt."
+msgstr ""
+"Có vẻ như tất cả các phím của bạn\n"
+"làm việc tốt. Thật là tuyệt."
 
 msgid "&Discard"
 msgstr "&Vứt bỏ"
@@ -3519,7 +3535,9 @@ msgstr "&Vứt bỏ"
 msgid ""
 "Great! You have a complete terminal database!\n"
 "All your keys work well."
-msgstr "Tuyệt! Chúng ta có một cơ sở dữ liệu mô tả terminal đầy đủ!\nTất cả các phím đều làm việc tốt."
+msgstr ""
+"Tuyệt! Chúng ta có một cơ sở dữ liệu mô tả terminal đầy đủ!\n"
+"Tất cả các phím đều làm việc tốt."
 
 msgid ""
 "Press all the keys mentioned here. After you have done it, check\n"
@@ -3565,7 +3583,10 @@ msgid ""
 "GNU Midnight Commander is already\n"
 "running on this terminal.\n"
 "Subshell support will be disabled."
-msgstr "Một GNU Midnight Commander đã làm việc\ntrên terminal này. Sẽ không có hỗ trợ\nshell con."
+msgstr ""
+"Một GNU Midnight Commander đã làm việc\n"
+"trên terminal này. Sẽ không có hỗ trợ\n"
+"shell con."
 
 #, c-format
 msgid "Cannot open named pipe %s\n"
@@ -3654,13 +3675,17 @@ msgstr ""
 msgid ""
 "Cannot open cpio archive\n"
 "%s"
-msgstr "Không mở được tập tin nén cpio\n%s"
+msgstr ""
+"Không mở được tập tin nén cpio\n"
+"%s"
 
 #, c-format
 msgid ""
 "Premature end of cpio archive\n"
 "%s"
-msgstr "Phần cuối của tập tin nén cpio bị hỏng\n%s"
+msgstr ""
+"Phần cuối của tập tin nén cpio bị hỏng\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3668,7 +3693,11 @@ msgid ""
 "%s\n"
 "in cpio archive\n"
 "%s"
-msgstr "Liên kết cứng không thích hợp \n%s\ntrong tập tin nén cpio\n%s"
+msgstr ""
+"Liên kết cứng không thích hợp \n"
+"%s\n"
+"trong tập tin nén cpio\n"
+"%s"
 
 #, c-format
 msgid "%s contains duplicate entries! Skipping!"
@@ -3678,19 +3707,25 @@ msgstr "%s chứa mục lặp lại! Nhảy qua!"
 msgid ""
 "Corrupted cpio header encountered in\n"
 "%s"
-msgstr "Lỗi phần đầu cpio phát hiện trong\n%s"
+msgstr ""
+"Lỗi phần đầu cpio phát hiện trong\n"
+"%s"
 
 #, c-format
 msgid ""
 "Unexpected end of file\n"
 "%s"
-msgstr "Kết thúc tập tin không mong đợi\n%s"
+msgstr ""
+"Kết thúc tập tin không mong đợi\n"
+"%s"
 
 #, c-format
 msgid ""
 "Cannot open %s archive\n"
 "%s"
-msgstr "Không mở được tập tin nén %s\n%s"
+msgstr ""
+"Không mở được tập tin nén %s\n"
+"%s"
 
 msgid "Inconsistent extfs archive"
 msgstr "Tập tin nén extfs không thích hợp"
@@ -3867,13 +3902,17 @@ msgstr ""
 msgid ""
 "Warning: Invalid line in %s:\n"
 "%s\n"
-msgstr "Cảnh báo: dòng không đúng trong %s:\n%s\n"
+msgstr ""
+"Cảnh báo: dòng không đúng trong %s:\n"
+"%s\n"
 
 #, c-format
 msgid ""
 "Warning: Invalid flag %c in %s:\n"
 "%s\n"
-msgstr "Cảnh báo: Cờ không đúng %c trong %s:\n%s\n"
+msgstr ""
+"Cảnh báo: Cờ không đúng %c trong %s:\n"
+"%s\n"
 
 #, c-format
 msgid "sftp: an error occurred while reading %s: %s"
@@ -3914,7 +3953,8 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-msgid "sftp: Failure establishing SSH session"
+#, c-format
+msgid "sftp: Failure establishing SSH session: (%d)"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
@@ -3958,7 +3998,9 @@ msgstr ""
 msgid ""
 "Cannot open tar archive\n"
 "%s"
-msgstr "Không mở được tập tin nén tar\n%s"
+msgstr ""
+"Không mở được tập tin nén tar\n"
+"%s"
 
 msgid "Inconsistent tar archive"
 msgstr "Tập tin tar không thích hợp"
@@ -4146,3 +4188,6 @@ msgstr ""
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr ""
+
+#~ msgid "Empty output from child filter"
+#~ msgstr "Bộ lọc con trả lại kết quả rỗng"

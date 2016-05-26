@@ -6,7 +6,7 @@
    created and destroyed.  This is required for the future vfs layer,
    it will be possible to have tree views over virtual file systems.
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -14,7 +14,7 @@
    Norbert Warmuth, 1997
    Miguel de Icaza, 1996, 1999
    Slava Zanko <slavazanko@gmail.com>, 2013
-   Andrew Borodin <aborodin@vmail.ru>, 2013, 2014, 2016
+   Andrew Borodin <aborodin@vmail.ru>, 2013, 2014
 
    This file is part of the Midnight Commander.
 
@@ -46,6 +46,7 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
+#include "lib/tty/mouse.h"
 #include "lib/tty/key.h"
 #include "lib/skin.h"
 #include "lib/vfs/vfs.h"
@@ -213,14 +214,10 @@ tree_destroy (WTree * tree)
 static void
 load_tree (WTree * tree)
 {
-    vfs_path_t *vpath;
-
     tree_store_load ();
 
     tree->selected_ptr = tree->store->tree_first;
-    vpath = vfs_path_from_str (mc_config_get_home_dir ());
-    tree_chdir (tree, vpath);
-    vfs_path_free (vpath);
+    tree_chdir (tree, mc_config_get_home_dir ());
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -612,6 +609,59 @@ maybe_chdir (WTree * tree)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+/** Mouse callback */
+
+static int
+tree_event (Gpm_Event * event, void *data)
+{
+    WTree *tree = (WTree *) data;
+    Widget *w = WIDGET (data);
+    Gpm_Event local;
+
+    if (!mouse_global_in_widget (event, w))
+        return MOU_UNHANDLED;
+
+    /* rest of the upper frame - call menu */
+    if (tree->is_panel && (event->type & GPM_DOWN) != 0 && event->y == WIDGET (w->owner)->y + 1)
+        return MOU_UNHANDLED;
+
+    local = mouse_get_local (event, w);
+
+    if ((local.type & GPM_UP) == 0)
+        return MOU_NORMAL;
+
+    if (tree->is_panel)
+        local.y--;
+
+    local.y--;
+
+    if (!tree->active)
+        change_panel ();
+
+    if (local.y < 0)
+    {
+        tree_move_backward (tree, tlines (tree) - 1);
+        show_tree (tree);
+    }
+    else if (local.y >= tlines (tree))
+    {
+        tree_move_forward (tree, tlines (tree) - 1);
+        show_tree (tree);
+    }
+    else if ((local.type & (GPM_UP | GPM_DOUBLE)) == (GPM_UP | GPM_DOUBLE))
+    {
+        if (tree->tree_shown[local.y] != NULL)
+        {
+            tree->selected_ptr = tree->tree_shown[local.y];
+            tree->topdiff = local.y;
+        }
+        tree_chdir_sel (tree);
+    }
+
+    return MOU_NORMAL;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /** Search tree for text */
 
 static int
@@ -979,7 +1029,7 @@ tree_toggle_navig (WTree * tree)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-tree_execute_cmd (WTree * tree, long command)
+tree_execute_cmd (WTree * tree, unsigned long command)
 {
     cb_ret_t res = MSG_HANDLED;
 
@@ -1200,73 +1250,6 @@ tree_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *da
 }
 
 /* --------------------------------------------------------------------------------------------- */
-
-/**
-  * Mouse callback
-  */
-static void
-tree_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
-{
-    WTree *tree = (WTree *) w;
-    int y;
-
-    y = event->y;
-    if (tree->is_panel)
-        y--;
-
-    switch (msg)
-    {
-    case MSG_MOUSE_DOWN:
-        /* rest of the upper frame - call menu */
-        if (tree->is_panel && event->y == WIDGET (w->owner)->y)
-        {
-            /* return MOU_UNHANDLED */
-            event->result.abort = TRUE;
-        }
-        else if (!tree->active)
-            change_panel ();
-        break;
-
-    case MSG_MOUSE_CLICK:
-        {
-            int lines;
-
-            lines = tlines (tree);
-
-            if (y < 0)
-            {
-                tree_move_backward (tree, lines - 1);
-                show_tree (tree);
-            }
-            else if (y >= lines)
-            {
-                tree_move_forward (tree, lines - 1);
-                show_tree (tree);
-            }
-            else if ((event->count & GPM_DOUBLE) != 0)
-            {
-                if (tree->tree_shown[y] != NULL)
-                {
-                    tree->selected_ptr = tree->tree_shown[y];
-                    tree->topdiff = y;
-                }
-
-                tree_chdir_sel (tree);
-            }
-        }
-        break;
-
-    case MSG_MOUSE_SCROLL_UP:
-    case MSG_MOUSE_SCROLL_DOWN:
-        /* TODO: Ticket #2218 */
-        break;
-
-    default:
-        break;
-    }
-}
-
-/* --------------------------------------------------------------------------------------------- */
 /*** public functions ****************************************************************************/
 /* --------------------------------------------------------------------------------------------- */
 
@@ -1279,7 +1262,7 @@ tree_new (int y, int x, int lines, int cols, gboolean is_panel)
     tree = g_new (WTree, 1);
     w = WIDGET (tree);
 
-    widget_init (w, y, x, lines, cols, tree_callback, tree_mouse_callback);
+    widget_init (w, y, x, lines, cols, tree_callback, tree_event);
     tree->is_panel = is_panel;
     tree->selected_ptr = 0;
 
@@ -1300,22 +1283,25 @@ tree_new (int y, int x, int lines, int cols, gboolean is_panel)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-tree_chdir (WTree * tree, const vfs_path_t * dir)
+tree_chdir (WTree * tree, const char *dir)
 {
+    vfs_path_t *vpath;
     tree_entry *current;
 
-    current = tree_store_whereis (dir);
+    vpath = vfs_path_from_str (dir);
+    current = tree_store_whereis (vpath);
     if (current != NULL)
     {
         tree->selected_ptr = current;
         tree_check_focus (tree);
     }
+    vfs_path_free (vpath);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 /** Return name of the currently selected entry */
 
-const vfs_path_t *
+vfs_path_t *
 tree_selected_name (const WTree * tree)
 {
     return tree->selected_ptr->name;
@@ -1324,15 +1310,15 @@ tree_selected_name (const WTree * tree)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-sync_tree (const vfs_path_t * vpath)
+sync_tree (const char *path)
 {
-    tree_chdir (the_tree, vpath);
+    tree_chdir (the_tree, path);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 WTree *
-find_tree (WDialog * h)
+find_tree (struct WDialog *h)
 {
     return (WTree *) find_widget_type (h, tree_callback);
 }

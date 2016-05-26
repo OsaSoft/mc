@@ -1,7 +1,7 @@
 /*
    Main program for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -67,7 +67,7 @@
 #include "events_init.h"
 #include "args.h"
 #ifdef ENABLE_SUBSHELL
-#include "subshell/subshell.h"
+#include "subshell.h"
 #endif
 #include "setup.h"              /* load_setup() */
 
@@ -108,7 +108,7 @@ check_codeset (void)
             if (mc_global.display_codepage == -1)
                 mc_global.display_codepage = 0;
 
-            mc_config_set_string (mc_global.main_config, CONFIG_MISC_SECTION, "display_codepage",
+            mc_config_set_string (mc_main_config, CONFIG_MISC_SECTION, "display_codepage",
                                   cp_display);
         }
     }
@@ -118,14 +118,31 @@ check_codeset (void)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/** POSIX version.  The only version we support.  */
 
+/** POSIX version.  The only version we support.  */
 static void
 OS_Setup (void)
 {
+    const char *shell_env;
     const char *datadir_env;
 
-    mc_shell_init ();
+    shell_env = getenv ("SHELL");
+    if ((shell_env == NULL) || (shell_env[0] == '\0'))
+    {
+        struct passwd *pwd;
+
+        pwd = getpwuid (geteuid ());
+        if (pwd != NULL)
+            mc_global.tty.shell = g_strdup (pwd->pw_shell);
+    }
+    else
+        mc_global.tty.shell = g_strdup (shell_env);
+
+    if ((mc_global.tty.shell == NULL) || (mc_global.tty.shell[0] == '\0'))
+    {
+        g_free (mc_global.tty.shell);
+        mc_global.tty.shell = g_strdup ("/bin/sh");
+    }
 
     /* This is the directory, where MC was installed, on Unix this is DATADIR */
     /* and can be overriden by the MC_DATADIR environment variable */
@@ -239,8 +256,8 @@ main (int argc, char *argv[])
       startup_exit_falure:
         fprintf (stderr, _("Failed to run:\n%s\n"), mcerror->message);
         g_error_free (mcerror);
+        g_free (mc_global.tty.shell);
       startup_exit_ok:
-        mc_shell_deinit ();
         str_uninit_strings ();
         mc_timer_destroy (mc_global.timer);
         return exit_code;
@@ -287,7 +304,7 @@ main (int argc, char *argv[])
         char *buffer;
         vfs_path_t *vpath;
 
-        buffer = mc_config_get_string (mc_global.panels_config, "Dirs", "other_dir", ".");
+        buffer = mc_config_get_string (mc_panels_config, "Dirs", "other_dir", ".");
         vpath = vfs_path_from_str (buffer);
         if (vfs_file_is_local (vpath))
             saved_other_dir = buffer;
@@ -351,9 +368,7 @@ main (int argc, char *argv[])
 
     load_keymap_defs (!mc_args__nokeymap);
 
-#ifdef USE_INTERNAL_EDIT
     macros_list = g_array_new (TRUE, FALSE, sizeof (macros_t));
-#endif /* USE_INTERNAL_EDIT */
 
     tty_init_colors (mc_global.tty.disable_colors, mc_args__force_colors);
 
@@ -363,7 +378,7 @@ main (int argc, char *argv[])
     if (mc_global.mc_run_mode == MC_RUN_FULL)
         command_set_default_colors ();
 
-    mc_error_message (&mcerror, NULL);
+    mc_error_message (&mcerror);
 
 #ifdef ENABLE_SUBSHELL
     /* Done here to ensure that the subshell doesn't  */
@@ -383,7 +398,7 @@ main (int argc, char *argv[])
        w/o Shift button in subshell in the native console */
     init_mouse ();
 
-    /* Done after tty_enter_ca_mode (tty_init) because in VTE bracketed mode is
+    /* Done after do_enter_ca_mode (tty_init) because in VTE bracketed mode is
        separate for the normal and alternate screens */
     enable_bracketed_paste ();
 
@@ -448,26 +463,23 @@ main (int argc, char *argv[])
     }
     g_free (last_wd_string);
 
-    mc_shell_deinit ();
+    g_free (mc_global.tty.shell);
 
     done_key ();
 
-#ifdef USE_INTERNAL_EDIT
     if (macros_list != NULL)
     {
         guint i;
-
         for (i = 0; i < macros_list->len; i++)
         {
             macros_t *macros;
 
             macros = &g_array_index (macros_list, struct macros_t, i);
             if (macros != NULL && macros->macro != NULL)
-                (void) g_array_free (macros->macro, TRUE);
+                (void) g_array_free (macros->macro, FALSE);
         }
         (void) g_array_free (macros_list, TRUE);
     }
-#endif /* USE_INTERNAL_EDIT */
 
     str_uninit_strings ();
 

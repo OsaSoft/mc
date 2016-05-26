@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Functions for searching in nroff-like view
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -60,12 +60,13 @@
 static gboolean
 mcview_nroff_get_char (mcview_nroff_t * nroff, int *ret_val, off_t nroff_index)
 {
-    int c = 0;
-
+    int c;
 #ifdef HAVE_CHARSET
     if (nroff->view->utf8)
     {
-        if (!mcview_get_utf (nroff->view, nroff_index, &c, &nroff->char_length))
+        gboolean utf_result;
+        c = mcview_get_utf (nroff->view, nroff_index, &nroff->char_length, &utf_result);
+        if (!utf_result)
         {
             /* we need got symbol in any case */
             nroff->char_length = 1;
@@ -91,7 +92,7 @@ mcview_nroff_get_char (mcview_nroff_t * nroff, int *ret_val, off_t nroff_index)
 /* --------------------------------------------------------------------------------------------- */
 
 int
-mcview__get_nroff_real_len (WView * view, off_t start, off_t length)
+mcview__get_nroff_real_len (mcview_t * view, off_t start, off_t length)
 {
     mcview_nroff_t *nroff;
     int ret = 0;
@@ -127,7 +128,7 @@ mcview__get_nroff_real_len (WView * view, off_t start, off_t length)
 /* --------------------------------------------------------------------------------------------- */
 
 mcview_nroff_t *
-mcview_nroff_seq_new_num (WView * view, off_t lc_index)
+mcview_nroff_seq_new_num (mcview_t * view, off_t lc_index)
 {
     mcview_nroff_t *nroff;
 
@@ -144,7 +145,7 @@ mcview_nroff_seq_new_num (WView * view, off_t lc_index)
 /* --------------------------------------------------------------------------------------------- */
 
 mcview_nroff_t *
-mcview_nroff_seq_new (WView * view)
+mcview_nroff_seq_new (mcview_t * view)
 {
     return mcview_nroff_seq_new_num (view, (off_t) 0);
 

@@ -16,11 +16,6 @@
 
 #define SFTP_DEFAULT_PORT 22
 
-/* LIBSSH2_INVALID_SOCKET is defined in libssh2 >= 1.4.1 */
-#ifndef LIBSSH2_INVALID_SOCKET
-#define LIBSSH2_INVALID_SOCKET -1
-#endif
-
 /*** enums ***************************************************************************************/
 
 typedef enum

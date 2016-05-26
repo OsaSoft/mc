@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Authors:
@@ -10,7 +10,7 @@
    Jakub Jelinek, 1995
    Andrej Borsenkow, 1996
    Norbert Warmuth, 1997
-   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013, 2016
+   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013
 
    This file is part of the Midnight Commander.
 
@@ -39,6 +39,7 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
+#include "lib/tty/mouse.h"
 #include "lib/widget.h"
 
 /*** global variables ****************************************************************************/
@@ -84,8 +85,8 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
         {
         case ' ':
             r->sel = r->pos;
+            send_message (w->owner, w, MSG_ACTION, 0, NULL);
             send_message (w, sender, MSG_FOCUS, ' ', data);
-            send_message (w->owner, w, MSG_NOTIFY, 0, NULL);
             return MSG_HANDLED;
 
         case KEY_UP:
@@ -104,14 +105,13 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
                 r->pos++;
                 return MSG_HANDLED;
             }
-        default:
-            return MSG_NOT_HANDLED;
         }
+        return MSG_NOT_HANDLED;
 
     case MSG_CURSOR:
+        send_message (w->owner, w, MSG_ACTION, 0, NULL);
         send_message (w, sender, MSG_FOCUS, ' ', data);
         widget_move (r, r->pos, 1);
-        send_message (w->owner, w, MSG_NOTIFY, 0, NULL);
         return MSG_HANDLED;
 
     case MSG_UNFOCUS:
@@ -142,25 +142,31 @@ radio_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *d
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
-radio_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
+static int
+radio_event (Gpm_Event * event, void *data)
 {
-    switch (msg)
+    Widget *w = WIDGET (data);
+
+    if (!mouse_global_in_widget (event, w))
+        return MOU_UNHANDLED;
+
+    if ((event->type & (GPM_DOWN | GPM_UP)) != 0)
     {
-    case MSG_MOUSE_DOWN:
-        RADIO (w)->pos = event->y;
+        WRadio *r = RADIO (data);
+        Gpm_Event local;
+
+        local = mouse_get_local (event, w);
+
+        r->pos = local.y - 1;
         dlg_select_widget (w);
-        break;
-
-    case MSG_MOUSE_CLICK:
-        RADIO (w)->pos = event->y;
-        send_message (w, NULL, MSG_KEY, ' ', NULL);
-        send_message (w->owner, w, MSG_POST_KEY, ' ', NULL);
-        break;
-
-    default:
-        break;
+        if ((event->type & GPM_UP) != 0)
+        {
+            radio_callback (w, NULL, MSG_KEY, ' ', NULL);
+            send_message (w->owner, w, MSG_POST_KEY, ' ', NULL);
+        }
     }
+
+    return MOU_NORMAL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -186,11 +192,11 @@ radio_new (int y, int x, int count, const char **texts)
 
         r->texts[i] = parse_hotkey (texts[i]);
         width = hotkey_width (r->texts[i]);
-        wmax = MAX (width, wmax);
+        wmax = max (width, wmax);
     }
 
+    widget_init (w, y, x, count, 4 + wmax, radio_callback, radio_event);
     /* 4 is width of "(*) " */
-    widget_init (w, y, x, count, 4 + wmax, radio_callback, radio_mouse_callback);
     r->state = 1;
     r->pos = 0;
     r->sel = 0;

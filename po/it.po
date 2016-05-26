@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 #
 # Translators:
-# Marco Ciampa <ciampix@libero.it>, 1999-2016
+# Marco Ciampa <ciampix@libero.it>, 1999-2014
 # Andreas Troschka <signupbox001@om.it.eu.org>, 2012.
 # Giuliano Natali <diaolin@diaolin.com>, 1998.
 # Slava Zanko <slavazanko@gmail.com>, 2011.
@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-05-07 18:23+0300\n"
-"PO-Revision-Date: 2016-05-08 19:38+0200\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2015-02-14 21:18+0100\n"
 "Last-Translator: Marco Ciampa <ciampix@libero.it>\n"
 "Language-Team: Italian (http://www.transifex.com/projects/p/mc/language/"
 "it/)\n"
@@ -491,13 +491,8 @@ msgstr "Errore facendo il dup della vecchia pipe errori"
 msgid "Directory cache expired for %s"
 msgstr "Cache dir scaduta per %s"
 
-#, c-format
-msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
-msgstr "%s: %s: %s %3d%% (%lld) byte trasferiti"
-
-#, c-format
-msgid "%s: %s: %s %lld bytes transferred"
-msgstr "%s: %s: %s %lld byte trasferiti"
+msgid "bytes transferred"
+msgstr "byte trasferiti"
 
 msgid "Starting linear transfer..."
 msgstr "Inizio trasferimento lineare..."
@@ -580,8 +575,8 @@ msgid "Error"
 msgstr "Errore"
 
 #, c-format
-msgid "%s (%d)"
-msgstr "%s (%d)"
+msgid "%d: %s"
+msgstr "%d: %s"
 
 msgid "&Abort"
 msgstr "&Annulla"
@@ -704,6 +699,7 @@ msgstr ""
 "   Aiuto:        helpnormal, helpitalic, helpbold, helplink, helpslink\n"
 
 #. TRANSLATORS: don't translate color names and attributes
+#, fuzzy
 msgid ""
 "Standard Colors:\n"
 "   black, gray, red, brightred, green, brightgreen, brown,\n"
@@ -725,7 +721,7 @@ msgstr ""
 "   da color16 a color255, o da rgb000 a rgb555 e da gray0 a gray23\n"
 "\n"
 "Attributi:\n"
-"   bold, italic, underline, reverse, blink; aggiungerne altri con \"+\"\n"
+"   bold, underline, reverse, blink; aggiungerne altri con \"+\"\n"
 
 msgid "Color options"
 msgstr "Opzioni colore"
@@ -764,8 +760,8 @@ msgstr "Errore di analisi argomenti!"
 msgid "No arguments given to the viewer."
 msgstr "Nessun argomento fornito al visualizzatore"
 
-msgid "Two files are required to envoke the diffviewer."
-msgstr "Sono necessari due file il visualizzatore diff."
+msgid "Two files are required to evoke the diffviewer."
+msgstr "Sono necessari due file nell'esecuzione del visualizzatore diff."
 
 msgid "Background protocol error"
 msgstr "Errore del protocollo in background "
@@ -1470,7 +1466,7 @@ msgid "Save &mode..."
 msgstr "&Modalità salvataggio..."
 
 msgid "Learn &keys..."
-msgstr "&Impara tasti..."
+msgstr "Impara &tasti..."
 
 msgid "Syntax &highlighting..."
 msgstr "Sintassi &evidenziata..."
@@ -1578,8 +1574,9 @@ msgstr ""
 "Un semplice editor di testi\n"
 "scritto per il Midnight Commander."
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
-msgstr "Copyright (C) 1996-2016 the Free Software Foundation"
+#, fuzzy
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
+msgstr "Copyright (C) 1996-2014 the Free Software Foundation"
 
 msgid "About"
 msgstr "Informazioni"
@@ -1776,10 +1773,10 @@ msgstr ""
 "%s"
 
 msgid "< Default >"
-msgstr "< Predefinito >"
+msgstr "< predefinito >"
 
 msgid "Skins"
-msgstr "Temi"
+msgstr "Skin"
 
 msgid "Other 8 bit"
 msgstr "Altre a 8 bit"
@@ -1866,7 +1863,7 @@ msgid "Configure options"
 msgstr "Configura opzioni"
 
 msgid "Skin:"
-msgstr "Tema:"
+msgstr "Skin:"
 
 msgid "Appearance"
 msgstr "Aspetto"
@@ -1916,9 +1913,6 @@ msgstr "Navigazione stile Lyn&x"
 msgid "Pa&ge scrolling"
 msgstr "Scorrimento pa&gine"
 
-msgid "Center &scrolling"
-msgstr "Centra &scorrimento"
-
 msgid "&Mouse page scrolling"
 msgstr "Scorrimento pagine &mouse"
 
@@ -1955,17 +1949,14 @@ msgstr ""
 msgid "&Full file list"
 msgstr "Lista &completa"
 
-msgid "&Brief file list:"
-msgstr "Lista file &breve:"
+msgid "&Brief file list"
+msgstr "Lista &breve"
 
 msgid "&Long file list"
-msgstr "Lista file &lunga"
+msgstr "Lista &lunga"
 
 msgid "&User defined:"
 msgstr "&Definita dall'utente:"
-
-msgid "columns"
-msgstr "colonne"
 
 msgid "User &mini status"
 msgstr "&Mini stato utente"
@@ -2288,10 +2279,6 @@ msgstr ""
 "i pannelli non possono essere nascosti."
 
 #, c-format
-msgid "'%s' is not a symbolic link"
-msgstr "\"%s\" non è un coll. simbolico"
-
-#, c-format
 msgid "Symlink '%s' points to:"
 msgstr "Il coll. simb. \"%s\" punta a:"
 
@@ -2305,6 +2292,10 @@ msgstr "modifica collegamento simb., impossibile rimuovere %s: %s"
 #, c-format
 msgid "edit symlink: %s"
 msgstr "modifica del collegamento simb.: %s"
+
+#, c-format
+msgid "'%s' is not a symbolic link"
+msgstr "\"%s\" non è un coll. simbolico"
 
 msgid "FTP to machine"
 msgstr "Connessione FTP"
@@ -2467,7 +2458,7 @@ msgstr ""
 "%s"
 
 msgid "Ski&p all"
-msgstr "Sa&lta tutti"
+msgstr "Salta tutti"
 
 msgid "&Retry"
 msgstr "&Riprova"
@@ -2634,7 +2625,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file \"%s\"\n"
+"Cannot read source file\"%s\"\n"
 "%s"
 msgstr ""
 "Impossibile leggere il file sorgente \"%s\"\n"
@@ -2760,7 +2751,7 @@ msgid "Sorry, I could not put the job in background"
 msgstr "Spiacente, non posso mettere il programma in background"
 
 msgid "S&uspend"
-msgstr "S&ospendi"
+msgstr "Sospendi"
 
 msgid "Con&tinue"
 msgstr "Con&tinua"
@@ -2856,7 +2847,7 @@ msgid "Source"
 msgstr "Sorgente"
 
 msgid "Target"
-msgstr "Destinazione"
+msgstr "Destinaz"
 
 msgid "Deleting"
 msgstr "Sto eliminando"
@@ -3069,7 +3060,7 @@ msgid "No node information"
 msgstr "Nessuna info sui nodi"
 
 msgid "Free nodes:"
-msgstr "Nodi liberi:  "
+msgstr "Nodi liberi:"
 
 msgid "No space information"
 msgstr "Nessuna info sullo spazio"
@@ -3079,40 +3070,40 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr "Spazio libero: %s/%s (%d%%)"
 
 #, c-format
-msgid "Type:       %s"
-msgstr "Tipo:          %s"
+msgid "Type:      %s"
+msgstr "Tipo:      %s"
 
 msgid "non-local vfs"
 msgstr "vfs non-locale"
 
 #, c-format
-msgid "Device:     %s"
-msgstr "Periferica:    %s"
+msgid "Device:    %s"
+msgstr "Periferica: %s"
 
 #, c-format
 msgid "Filesystem: %s"
-msgstr "Filesystem:    %s"
+msgstr "Filesystem: %s"
 
 #, c-format
-msgid "Accessed:   %s"
-msgstr "Aperto:        %s"
+msgid "Accessed:  %s"
+msgstr "Aperto:     %s"
 
 #, c-format
-msgid "Modified:   %s"
-msgstr "Modificato:    %s"
+msgid "Modified:  %s"
+msgstr "Modificato: %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:    %s"
-msgstr "Cambiato:      %s"
+msgid "Changed:   %s"
+msgstr "Cambiato:  %s"
 
 #, c-format
 msgid "Dev. type: major %lu, minor %lu"
 msgstr "Tipo dis.: major %lu, minor %lu"
 
 #, c-format
-msgid "Size:       %s"
-msgstr "Dimensione:    %s"
+msgid "Size:      %s"
+msgstr "Dimensione: %s"
 
 #, c-format
 msgid " (%ld block)"
@@ -3121,20 +3112,20 @@ msgstr[0] " (%ld blocco)"
 msgstr[1] " (%ld blocchi)"
 
 #, c-format
-msgid "Owner:      %s/%s"
-msgstr "Proprietà:     %s/%s"
+msgid "Owner:     %s/%s"
+msgstr "Proprietà:  %s/%s"
 
 #, c-format
-msgid "Links:      %d"
-msgstr "Collegamenti:  %d"
+msgid "Links:     %d"
+msgstr "Collegamenti:   %d"
 
 #, c-format
-msgid "Mode:       %s (%04o)"
-msgstr "Permessi:      %s (%04o)"
+msgid "Mode:      %s (%04o)"
+msgstr "Permessi:   %s (%04o)"
 
 #, c-format
-msgid "Location:   %Xh:%Xh"
-msgstr "Posizione:     %Xh:%Xh"
+msgid "Location:  %Xh:%Xh"
+msgstr "Posizione:  %Xh:%Xh"
 
 msgid "&Equal split"
 msgstr "&Divisione schermo uguale"
@@ -3173,7 +3164,7 @@ msgid "Output lines:"
 msgstr "Righe d'uscita:"
 
 msgid "Layout"
-msgstr "Disposizione"
+msgstr "Aspetto"
 
 msgid "File listin&g"
 msgstr "&Elenco file"
@@ -3329,7 +3320,7 @@ msgid "&Configuration..."
 msgstr "&Configurazione..."
 
 msgid "&Layout..."
-msgstr "&Disposizione..."
+msgstr "&Aspetto..."
 
 msgid "&Panel options..."
 msgstr "Opzioni &pannello..."
@@ -4165,8 +4156,9 @@ msgstr "sftp: inserire password per %s "
 msgid "sftp: Password is empty."
 msgstr "sftp: la password è vuota."
 
-msgid "sftp: Failure establishing SSH session"
-msgstr "sftp: fallita avvio sessione SSH"
+#, c-format
+msgid "sftp: Failure establishing SSH session: (%d)"
+msgstr "sftp: fallito inizio sessione SSH: (%d)"
 
 msgid "sftp: No file handler data present for reading file"
 msgstr "sftp: nessun file handler dati per la lettura del file"
@@ -4418,3 +4410,10 @@ msgstr "Continuare dall'inizio?"
 
 msgid "Cannot fetch a local copy of /ftp://some.host/editme.txt"
 msgstr "Impossibile ricevere copia locale di /ftp://un.host/modificami.txt"
+
+#~ msgid ""
+#~ "Cannot open file%s\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Impossibile aprire il file %s\n"
+#~ "%s"

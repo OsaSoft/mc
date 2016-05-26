@@ -1,7 +1,7 @@
 /* Virtual File System: SFTP file system.
    The internal functions: dirs
 
-   Copyright (C) 2011-2016
+   Copyright (C) 2011-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -149,6 +149,7 @@ sftpfs_readdir (void *data, GError ** mcerror)
         return NULL;
 
     g_strlcpy (sftpfs_dirent.dent.d_name, mem, BUF_MEDIUM);
+    compute_namelen (&sftpfs_dirent.dent);
     return &sftpfs_dirent;
 }
 

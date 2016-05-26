@@ -1,7 +1,7 @@
 /* Virtual File System: SFTP file system.
    The internal functions: files
 
-   Copyright (C) 2011-2016
+   Copyright (C) 2011-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -248,7 +248,7 @@ sftpfs_read_file (vfs_file_handler_t * file_handler, char *buffer, size_t count,
 
     if (file_handler == NULL || file_handler->data == NULL)
     {
-        mc_propagate_error (mcerror, 0, "%s",
+        mc_propagate_error (mcerror, -1, "%s",
                             _("sftp: No file handler data present for reading file"));
         return -1;
     }
@@ -398,8 +398,6 @@ sftpfs_lseek (vfs_file_handler_t * file_handler, off_t offset, int whence, GErro
             mc_return_val_if_error (mcerror, 0);
         }
         file_handler->pos = file_handler->ino->st.st_size - offset;
-        break;
-    default:
         break;
     }
 

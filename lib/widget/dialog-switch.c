@@ -3,7 +3,7 @@
 
    Original idea and code: Oleg "Olegarch" Konovalov <olegarch@linuxinside.com>
 
-   Copyright (C) 2009-2016
+   Copyright (C) 2009-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -35,6 +35,9 @@
 #include "lib/global.h"
 #include "lib/tty/tty.h"        /* LINES, COLS */
 #include "lib/tty/color.h"      /* tty_set_normal_attrs() */
+#ifdef HAVE_SLANG
+#include "lib/tty/win.h"        /* do_enter_ca_mode() */
+#endif
 #include "lib/widget.h"
 #include "lib/event.h"
 
@@ -230,7 +233,7 @@ dialog_switch_list (void)
     if (mc_global.midnight_shutdown || mc_current == NULL)
         return;
 
-    lines = MIN ((size_t) (LINES * 2 / 3), dlg_num);
+    lines = min ((size_t) (LINES * 2 / 3), dlg_num);
     cols = COLS * 2 / 3;
 
     listbox = create_listbox_window (lines, cols, _("Screens"), "[Screen selector]");
@@ -247,8 +250,7 @@ dialog_switch_list (void)
         else
             title = g_strdup ("");
 
-        listbox_add_item (listbox->list, LISTBOX_APPEND_BEFORE, get_hotkey (i++), title, NULL,
-                          FALSE);
+        listbox_add_item (listbox->list, LISTBOX_APPEND_BEFORE, get_hotkey (i++), title, NULL);
 
         g_free (title);
     }
@@ -369,6 +371,7 @@ dialog_change_screen_size (void)
     tty_change_screen_size ();
 
 #ifdef HAVE_SLANG
+    do_enter_ca_mode ();
     tty_keypad (TRUE);
     tty_nodelay (FALSE);
 #endif

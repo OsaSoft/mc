@@ -1,7 +1,7 @@
 /*
    Virtual File System switch code
 
-   Copyright (C) 1995-2016
+   Copyright (C) 1995-2015
    Free Software Foundation, Inc.
 
    Written by: 1995 Miguel de Icaza
@@ -59,17 +59,14 @@
 #include "utilvfs.h"
 #include "gc.h"
 
-/* TODO: move it to the separate .h */
 extern struct dirent *mc_readdir_result;
-extern GPtrArray *vfs__classes_list;
-extern GString *vfs_str_buffer;
-extern vfs_class *current_vfs;
-
 /*** global variables ****************************************************************************/
 
 GPtrArray *vfs__classes_list = NULL;
+
 GString *vfs_str_buffer = NULL;
-vfs_class *current_vfs = NULL;
+struct vfs_class *current_vfs = NULL;
+
 
 /*** file scope macro definitions ****************************************************************/
 
@@ -86,7 +83,7 @@ vfs_class *current_vfs = NULL;
 struct vfs_openfile
 {
     int handle;
-    vfs_class *vclass;
+    struct vfs_class *vclass;
     void *fsinfo;
 };
 
@@ -147,7 +144,7 @@ _vfs_translate_path (const char *path, int size, GIConv defcnv, GString * buffer
             slash = NULL;
 
         ms = (slash != NULL) ? slash - semi : (int) strlen (semi);
-        ms = MIN ((unsigned int) ms, sizeof (encoding) - 1);
+        ms = min ((unsigned int) ms, sizeof (encoding) - 1);
         /* limit encoding size (ms) to path size (size) */
         if (semi + ms > path + size)
             ms = path + size - semi;
@@ -225,22 +222,29 @@ vfs_free_handle (int handle)
 
 
 /* --------------------------------------------------------------------------------------------- */
-/** Find VFS class by file handle */
+/** Find private file data by file handle */
 
-struct vfs_class *
-vfs_class_find_by_handle (int handle, void **fsinfo)
+void *
+vfs_class_data_find_by_handle (int handle)
 {
     struct vfs_openfile *h;
 
     h = vfs_get_openfile (handle);
 
-    if (h == NULL)
-        return NULL;
+    return h == NULL ? NULL : h->fsinfo;
+}
 
-    if (fsinfo != NULL)
-        *fsinfo = h->fsinfo;
+/* --------------------------------------------------------------------------------------------- */
+/** Find VFS class by file handle */
 
-    return h->vclass;
+struct vfs_class *
+vfs_class_find_by_handle (int handle)
+{
+    struct vfs_openfile *h;
+
+    h = vfs_get_openfile (handle);
+
+    return h == NULL ? NULL : h->vclass;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -357,24 +361,11 @@ vfs_translate_path_n (const char *path)
 /**
  * Get current directory without any OS calls.
  *
- * @return string contains current path
- */
-
-const char *
-vfs_get_current_dir (void)
-{
-    return current_path->str;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Get current directory without any OS calls.
- *
- * @return newly allocated string contains current path
+ * @return string contain current path
  */
 
 char *
-vfs_get_current_dir_n (void)
+vfs_get_current_dir (void)
 {
     return g_strdup (current_path->str);
 }
@@ -521,13 +512,12 @@ void
 vfs_print_message (const char *msg, ...)
 {
     ev_vfs_print_message_t event_data;
-    va_list ap;
 
-    va_start (ap, msg);
-    event_data.msg = g_strdup_vprintf (msg, ap);
-    va_end (ap);
+    va_start (event_data.ap, msg);
+    event_data.msg = msg;
 
     mc_event_raise (MCEVENT_GROUP_CORE, "vfs_print_message", (gpointer) & event_data);
+    va_end (event_data.ap);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -629,20 +619,24 @@ vfs_preallocate (int dest_vfs_fd, off_t src_fsize, off_t dest_fsize)
     return 0;
 
 #else /* HAVE_POSIX_FALLOCATE */
-    void *dest_fd = NULL;
+    int *dest_fd;
     struct vfs_class *dest_class;
 
     if (!mc_global.vfs.preallocate_space)
         return 0;
 
+    dest_class = vfs_class_find_by_handle (dest_vfs_fd);
+    if ((dest_class->flags & VFSF_LOCAL) == 0)
+        return 0;
+
+    dest_fd = (int *) vfs_class_data_find_by_handle (dest_vfs_fd);
+    if (dest_fd == NULL)
+        return 0;
+
     if (src_fsize == 0)
         return 0;
 
-    dest_class = vfs_class_find_by_handle (dest_vfs_fd, &dest_fd);
-    if ((dest_class->flags & VFSF_LOCAL) == 0 || dest_fd == NULL)
-        return 0;
-
-    return posix_fallocate (*(int *) dest_fd, dest_fsize, src_fsize - dest_fsize);
+    return posix_fallocate (*dest_fd, dest_fsize, src_fsize - dest_fsize);
 
 #endif /* HAVE_POSIX_FALLOCATE */
 }

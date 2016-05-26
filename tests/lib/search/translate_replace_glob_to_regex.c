@@ -1,7 +1,7 @@
 /*
    libmc - checks for processing esc sequences in replace string
 
-   Copyright (C) 2011-2016
+   Copyright (C) 2011-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -96,11 +96,10 @@ main (void)
 
     suite_add_tcase (s, tc_core);
     sr = srunner_create (s);
-    srunner_set_log (sr, "translate_replace_glob_to_regex.log");
-    srunner_run_all (sr, CK_ENV);
+    srunner_run_all (sr, CK_NORMAL);
     number_failed = srunner_ntests_failed (sr);
     srunner_free (sr);
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (number_failed == 0) ? 0 : 1;
 }
 
 /* --------------------------------------------------------------------------------------------- */

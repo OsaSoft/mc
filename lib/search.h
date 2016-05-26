@@ -31,18 +31,16 @@ typedef mc_search_cbret_t (*mc_update_fn) (const void *user_data, gsize char_off
 
 typedef enum
 {
-    MC_SEARCH_E_OK = 0,
+    MC_SEARCH_E_OK,
     MC_SEARCH_E_INPUT,
     MC_SEARCH_E_REGEX_COMPILE,
     MC_SEARCH_E_REGEX,
     MC_SEARCH_E_REGEX_REPLACE,
-    MC_SEARCH_E_NOTFOUND,
-    MC_SEARCH_E_ABORT
+    MC_SEARCH_E_NOTFOUND
 } mc_search_error_t;
 
 typedef enum
 {
-    MC_SEARCH_T_INVALID = -1,
     MC_SEARCH_T_NORMAL,
     MC_SEARCH_T_REGEX,
     MC_SEARCH_T_HEX,
@@ -54,8 +52,7 @@ enum mc_search_cbret_t
     MC_SEARCH_CB_OK = 0,
     MC_SEARCH_CB_INVALID = -1,
     MC_SEARCH_CB_ABORT = -2,
-    MC_SEARCH_CB_SKIP = -3,
-    MC_SEARCH_CB_NOTFOUND = -4
+    MC_SEARCH_CB_SKIP = -3
 };
 
 /*** structures declarations (and typedefs of structures)*****************************************/
@@ -130,18 +127,10 @@ typedef struct mc_search_type_str_struct
 
 /*** global variables defined in .c file *********************************************************/
 
-/* Error messages */
-extern const char *STR_E_NOTFOUND;
-extern const char *STR_E_UNKNOWN_TYPE;
-extern const char *STR_E_RPL_NOT_EQ_TO_FOUND;
-extern const char *STR_E_RPL_INVALID_TOKEN;
-
 /*** declarations of public functions ************************************************************/
 
-mc_search_t *mc_search_new (const gchar * original, const gchar * original_charset);
-
-mc_search_t *mc_search_new_len (const gchar * original, gsize original_len,
-                                const gchar * original_charset);
+mc_search_t *mc_search_new (const gchar * original, gsize original_len,
+                            const gchar * original_charset);
 
 void mc_search_free (mc_search_t * lc_mc_search);
 
@@ -166,10 +155,5 @@ gboolean mc_search (const gchar * pattern, const gchar * pattern_charset, const 
 
 int mc_search_getstart_result_by_num (mc_search_t *, int);
 int mc_search_getend_result_by_num (mc_search_t *, int);
-
-/* *INDENT-OFF* */
-void mc_search_set_error (mc_search_t * mc_search, mc_search_error_t code, const gchar * format, ...)
-     G_GNUC_PRINTF (3, 4);
-/* *INDENT-ON* */
 
 #endif

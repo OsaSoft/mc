@@ -1,7 +1,7 @@
 /*
    Virtual File System path handlers
 
-   Copyright (C) 2011-2016
+   Copyright (C) 2011-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -135,16 +135,13 @@ _vfs_split_with_semi_skip_count (char *path, const char **inpath, const char **o
 static char *
 vfs_canon (const char *path)
 {
-    char *result;
-
     if (path == NULL)
         vfs_die ("Cannot canonicalize NULL");
 
+    /* Relative to current directory */
     if (!IS_PATH_SEP (*path))
     {
-        /* Relative to current directory */
-
-        char *local;
+        char *result, *local;
 
         if (g_str_has_prefix (path, VFS_ENCODING_PREFIX))
         {
@@ -152,27 +149,32 @@ vfs_canon (const char *path)
                encoding prefix placed at start of string without the leading slash
                should be autofixed by adding the leading slash
              */
-            local = mc_build_filename (PATH_SEP_STR, path, (char *) NULL);
+            local = mc_build_filename (PATH_SEP_STR, path, NULL);
         }
         else
         {
-            const char *curr_dir;
+            char *curr_dir;
 
             curr_dir = vfs_get_current_dir ();
-            local = mc_build_filename (curr_dir, path, (char *) NULL);
+            local = mc_build_filename (curr_dir, path, NULL);
+            g_free (curr_dir);
         }
         result = vfs_canon (local);
         g_free (local);
+        return result;
     }
-    else
+
+    /*
+     * So we have path of following form:
+     * /p1/p2#op/.././././p3#op/p4. Good luck.
+     */
     {
-        /* Absolute path */
+        char *result;
 
         result = g_strdup (path);
         canonicalize_pathname (result);
+        return result;
     }
-
-    return result;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -306,8 +308,6 @@ vfs_path_url_split (vfs_path_element_t * path_element, const char *path)
                     break;
                 case 'r':
                     path_element->port = 2;
-                    break;
-                default:
                     break;
                 }
             }
@@ -805,11 +805,11 @@ vfs_path_elements_count (const vfs_path_t * vpath)
  */
 
 void
-vfs_path_add_element (vfs_path_t * vpath, const vfs_path_element_t * path_element)
+vfs_path_add_element (const vfs_path_t * vpath, const vfs_path_element_t * path_element)
 {
     g_array_append_val (vpath->path, path_element);
     g_free (vpath->str);
-    vpath->str = vfs_path_to_str_flags (vpath, 0, VPF_NONE);
+    ((vfs_path_t *) vpath)->str = vfs_path_to_str_flags (vpath, 0, VPF_NONE);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1094,7 +1094,7 @@ vfs_path_serialize (const vfs_path_t * vpath, GError ** mcerror)
 
     if ((vpath == NULL) || (vfs_path_elements_count (vpath) == 0))
     {
-        mc_propagate_error (mcerror, 0, "%s", "vpath object is empty");
+        mc_propagate_error (mcerror, -1, "%s", "vpath object is empty");
         return NULL;
 
     }
@@ -1177,7 +1177,7 @@ vfs_path_deserialize (const char *data, GError ** mcerror)
         {
             g_free (element);
             vfs_path_free (vpath);
-            g_set_error (mcerror, MC_ERROR, 0, "Unable to find VFS class by name '%s'", cfg_value);
+            g_set_error (mcerror, MC_ERROR, -1, "Unable to find VFS class by name '%s'", cfg_value);
             g_free (cfg_value);
             mc_config_deinit (cpath);
             return NULL;
@@ -1209,7 +1209,7 @@ vfs_path_deserialize (const char *data, GError ** mcerror)
     if (vfs_path_elements_count (vpath) == 0)
     {
         vfs_path_free (vpath);
-        g_set_error (mcerror, MC_ERROR, 0, "No any path elements found");
+        g_set_error (mcerror, MC_ERROR, -1, "No any path elements found");
         return NULL;
     }
     vpath->str = vfs_path_to_str_flags (vpath, 0, VPF_NONE);
@@ -1272,7 +1272,7 @@ vfs_path_append_new (const vfs_path_t * vpath, const char *first_element, ...)
     va_end (args);
 
     result_str = vfs_path_as_str (vpath);
-    ret_vpath = vfs_path_build_filename (result_str, str_path, (char *) NULL);
+    ret_vpath = vfs_path_build_filename (result_str, str_path, NULL);
     g_free (str_path);
 
     return ret_vpath;

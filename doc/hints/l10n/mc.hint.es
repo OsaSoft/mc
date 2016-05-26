@@ -27,7 +27,8 @@ contenido.
 
 Consejo: El Midnight Commander tiene manual: «man mc»
 
-Hint: Do you want Lynx-style navigation? Set it in the Configuration dialog.
+Consejo: ¿Desea navegar con las flechas al estilo Lynx? Está en
+Configuración.
 
 Consejo: Las macros con % funcionan incluso en la línea de órdenes.
 

@@ -1,7 +1,7 @@
 /*
    Widget based utility functions.
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Authors:
@@ -115,7 +115,7 @@ query_default_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 /* --------------------------------------------------------------------------------------------- */
 /** Create message dialog */
 
-static WDialog *
+static struct WDialog *
 do_create_message (int flags, const char *title, const char *text)
 {
     char *p;
@@ -299,7 +299,7 @@ query_dialog (const char *header, const char *text, int flags, int count, ...)
 
     /* count coordinates */
     str_msg_term_size (text, &lines, &cols);
-    cols = 6 + MAX (win_len, MAX (str_term_width1 (header), cols));
+    cols = 6 + max (win_len, max (str_term_width1 (header), cols));
     lines += 4 + (count > 0 ? 2 : 0);
 
     /* prepare dialog */
@@ -378,7 +378,7 @@ query_set_sel (int new_sel)
  * dlg_destroy() to dismiss it.  Not safe to call from background.
  */
 
-WDialog *
+struct WDialog *
 create_message (int flags, const char *title, const char *text, ...)
 {
     va_list args;
@@ -435,19 +435,12 @@ message (int flags, const char *title, const char *text, ...)
 /** Show error message box */
 
 gboolean
-mc_error_message (GError ** mcerror, int *code)
+mc_error_message (GError ** mcerror)
 {
     if (mcerror == NULL || *mcerror == NULL)
         return FALSE;
 
-    if ((*mcerror)->code == 0)
-        message (D_ERROR, MSG_ERROR, "%s", (*mcerror)->message);
-    else
-        message (D_ERROR, MSG_ERROR, _("%s (%d)"), (*mcerror)->message, (*mcerror)->code);
-
-    if (code != NULL)
-        *code = (*mcerror)->code;
-
+    message (D_ERROR, MSG_ERROR, _("%d: %s"), (*mcerror)->code, (*mcerror)->message);
     g_error_free (*mcerror);
     *mcerror = NULL;
 
@@ -585,10 +578,10 @@ status_msg_init (status_msg_t * sm, const char *title, double delay, status_msg_
 
     start = mc_timer_elapsed (mc_global.timer);
 
-    sm->dlg = dlg_create (TRUE, 0, 0, 7, MIN (MAX (40, COLS / 2), COLS), dialog_colors,
+    sm->dlg = dlg_create (TRUE, 0, 0, 7, min (max (40, COLS / 2), COLS), dialog_colors,
                           NULL, NULL, NULL, title, DLG_CENTER);
     sm->start = start;
-    sm->delay = (guint64) (delay * G_USEC_PER_SEC);
+    sm->delay = delay * G_USEC_PER_SEC;
     sm->block = FALSE;
 
     sm->init = init_cb;
@@ -600,7 +593,7 @@ status_msg_init (status_msg_t * sm, const char *title, double delay, status_msg_
 
     if (mc_time_elapsed (&start, sm->delay))
     {
-        /* We will manage the dialog without any help, that's why we have to call dlg_init */
+        /* We will manage the dialog without any help, that's why we have to call init_dlg */
         dlg_init (sm->dlg);
     }
 }
@@ -697,7 +690,7 @@ simple_status_msg_init_cb (status_msg_t * sm)
 #endif
 
     b_width = str_term_width1 (b_name) + 4;
-    wd_width = MAX (wd->cols, b_width + 6);
+    wd_width = max (wd->cols, b_width + 6);
 
     y = 2;
     ssm->label = label_new (y++, 3, "");

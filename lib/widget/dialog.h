@@ -14,6 +14,7 @@
 #include "lib/global.h"
 #include "lib/hook.h"           /* hook_t */
 #include "lib/keybind.h"        /* global_keymap_t */
+#include "lib/tty/mouse.h"      /* mouse_h */
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
@@ -63,7 +64,7 @@ typedef enum
 
 /* get string representation of shortcut assigned  with command */
 /* as menu is a widget of dialog, ask dialog about shortcut string */
-typedef char *(*dlg_shortcut_str) (long command);
+typedef char *(*dlg_shortcut_str) (unsigned long command);
 
 /* get dialog name to show in dialog list */
 typedef char *(*dlg_title_str) (const WDialog * h, size_t len);
@@ -127,7 +128,7 @@ extern const global_keymap_t *dialog_map;
 
 /* Creates a dialog head  */
 WDialog *dlg_create (gboolean modal, int y1, int x1, int lines, int cols,
-                     const int *colors, widget_cb_fn callback, widget_mouse_cb_fn mouse_callback,
+                     const int *colors, widget_cb_fn callback, mouse_h mouse_handler,
                      const char *help_ctx, const char *title, dlg_flags_t flags);
 
 void dlg_set_default_colors (void);
@@ -170,7 +171,6 @@ void dlg_stop (WDialog * h);
 /* Widget selection */
 void dlg_select_widget (void *w);
 void dlg_set_top_widget (void *w);
-void dlg_set_bottom_widget (void *w);
 void dlg_one_up (WDialog * h);
 void dlg_one_down (WDialog * h);
 gboolean dlg_focus (WDialog * h);
@@ -189,7 +189,7 @@ void update_cursor (WDialog * h);
 /* --------------------------------------------------------------------------------------------- */
 
 static inline unsigned long
-dlg_get_current_widget_id (const WDialog * h)
+dlg_get_current_widget_id (const struct WDialog *h)
 {
     return WIDGET (h->current->data)->id;
 }

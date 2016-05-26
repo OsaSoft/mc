@@ -7,8 +7,8 @@
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
-#define LISTBOX_APPEND_TEXT(l,h,t,d,f) \
-    listbox_add_item (l->list, LISTBOX_APPEND_AT_END, h, t, d, f)
+#define LISTBOX_APPEND_TEXT(l,h,t,d) \
+    listbox_add_item (l->list, LISTBOX_APPEND_AT_END, h, t, d)
 
 /*** enums ***************************************************************************************/
 
@@ -16,8 +16,8 @@
 
 typedef struct
 {
-    WDialog *dlg;
-    WListbox *list;
+    struct WDialog *dlg;
+    struct WListbox *list;
 } Listbox;
 
 /*** global variables defined in .c file *********************************************************/

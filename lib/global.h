@@ -21,9 +21,6 @@
 #include <sys/param.h>
 #endif
 
-/* for O_* macros */
-#include <fcntl.h>
-
 /* for sig_atomic_t */
 #include <signal.h>
 
@@ -64,7 +61,6 @@
 #include <glib.h>
 #include "glibcompat.h"
 
-/* For SMB VFS only */
 #ifndef __GNUC__
 #define __attribute__(x)
 #endif
@@ -94,12 +90,21 @@
 #endif /* !ENABLE_NLS */
 
 #include "fs.h"
-#include "shell.h"
-#include "mcconfig.h"
 
 #ifdef USE_MAINTAINER_MODE
 #include "lib/logging.h"
 #endif
+
+#ifdef min
+#undef min
+#endif
+
+#ifdef max
+#undef max
+#endif
+
+#define min(x, y) ((x) > (y) ? (y) : (x))
+#define max(x, y) ((x) > (y) ? (x) : (y))
 
 /* Just for keeping Your's brains from invention a proper size of the buffer :-) */
 #define BUF_10K 10240L
@@ -153,8 +158,6 @@
 
 #define DEFAULT_CHARSET "ASCII"
 
-#include "lib/timer.h"          /* mc_timer_t */
-
 /*** enums ***************************************************************************************/
 
 /* run mode and params */
@@ -172,7 +175,7 @@ typedef struct
 {
     mc_run_mode_t mc_run_mode;
     /* global timer */
-    mc_timer_t *timer;
+    struct mc_timer_t *timer;
     /* Used so that widgets know if they are being destroyed or shut down */
     gboolean midnight_shutdown;
 
@@ -181,9 +184,6 @@ typedef struct
     char *sysconfig_dir;
     /* share_data_dir: Area for default settings from developers */
     char *share_data_dir;
-
-    mc_config_t *main_config;
-    mc_config_t *panels_config;
 
 #ifdef HAVE_CHARSET
     /* Numbers of (file I/O) and (input/display) codepages. -1 if not selected */
@@ -227,9 +227,6 @@ typedef struct
         gboolean is_right;      /* If the selected menu was the right */
     } widget;
 
-    /* The user's shell */
-    mc_shell_t *shell;
-
     struct
     {
         /* Use the specified skin */
@@ -247,11 +244,13 @@ typedef struct
 #endif                          /* !LINUX_CONS_SAVER_C */
         /* If using a subshell for evaluating commands this is true */
         gboolean use_subshell;
-
 #ifdef ENABLE_SUBSHELL
         /* File descriptors of the pseudoterminal used by the subshell */
         int subshell_pty;
 #endif                          /* !ENABLE_SUBSHELL */
+
+        /* The user's shell */
+        char *shell;
 
         /* This flag is set by xterm detection routine in function main() */
         /* It is used by function view_other_cmd() */

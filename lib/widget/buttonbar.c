@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Authors:
@@ -10,7 +10,7 @@
    Jakub Jelinek, 1995
    Andrej Borsenkow, 1996
    Norbert Warmuth, 1997
-   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013, 2016
+   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013
 
    This file is part of the Midnight Commander.
 
@@ -40,6 +40,7 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
+#include "lib/tty/mouse.h"
 #include "lib/tty/key.h"        /* XCTRL and ALT macros  */
 #include "lib/skin.h"
 #include "lib/strutil.h"
@@ -147,12 +148,9 @@ buttonbar_call (WButtonBar * bb, int i)
 {
     cb_ret_t ret = MSG_NOT_HANDLED;
     Widget *w = WIDGET (bb);
-    Widget *target;
-
-    target = (bb->labels[i].receiver != NULL) ? bb->labels[i].receiver : WIDGET (w->owner);
 
     if ((bb != NULL) && (bb->labels[i].command != CK_IgnoreKey))
-        ret = send_message (target, w, MSG_ACTION, bb->labels[i].command, NULL);
+        ret = send_message (w->owner, w, MSG_ACTION, bb->labels[i].command, bb->labels[i].receiver);
     return ret;
 }
 
@@ -215,25 +213,27 @@ buttonbar_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, voi
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
-buttonbar_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
+static int
+buttonbar_event (Gpm_Event * event, void *data)
 {
-    switch (msg)
+    Widget *w = WIDGET (data);
+
+    if (!mouse_global_in_widget (event, w))
+        return MOU_UNHANDLED;
+
+    if ((event->type & GPM_UP) != 0)
     {
-    case MSG_MOUSE_CLICK:
-        {
-            WButtonBar *bb = BUTTONBAR (w);
-            int button;
+        WButtonBar *bb = BUTTONBAR (data);
+        Gpm_Event local;
+        int button;
 
-            button = buttonbar_get_button_by_x_coord (bb, event->x);
-            if (button >= 0)
-                buttonbar_call (bb, button);
-            break;
-        }
-
-    default:
-        break;
+        local = mouse_get_local (event, w);
+        button = buttonbar_get_button_by_x_coord (bb, local.x - 1);
+        if (button >= 0)
+            buttonbar_call (bb, button);
     }
+
+    return MOU_NORMAL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -248,7 +248,7 @@ buttonbar_new (gboolean visible)
 
     bb = g_new0 (WButtonBar, 1);
     w = WIDGET (bb);
-    widget_init (w, LINES - 1, 0, 1, COLS, buttonbar_callback, buttonbar_mouse_callback);
+    widget_init (w, LINES - 1, 0, 1, COLS, buttonbar_callback, buttonbar_event);
 
     w->pos_flags = WPOS_KEEP_HORZ | WPOS_KEEP_BOTTOM;
     bb->visible = visible;
@@ -261,12 +261,12 @@ buttonbar_new (gboolean visible)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-buttonbar_set_label (WButtonBar * bb, int idx, const char *text, const global_keymap_t * keymap,
-                     Widget * receiver)
+buttonbar_set_label (WButtonBar * bb, int idx, const char *text,
+                     const struct global_keymap_t *keymap, const Widget * receiver)
 {
     if ((bb != NULL) && (idx >= 1) && (idx <= BUTTONBAR_LABELS_NUM))
     {
-        long command = CK_IgnoreKey;
+        unsigned long command = CK_IgnoreKey;
 
         if (keymap != NULL)
             command = keybind_lookup_keymap_command (keymap, KEY_F (idx));

@@ -1,103 +1,93 @@
-Tip: Pomocou C-x t skopírujete označené názvy súborov do príkazového riadka.
+Hint: Use C-x t to copy tagged file names to the command line.
 
-Tip: Pomocou C-x p skopírujete aktuálnu cestu do príkazového riadka.
+Hint: Use C-x p to copy the current pathname to the command line.
 
-Rada: Dopĺňanie pomocou M-Tab (alebo Esc+Tab). Ak ho napíšete dvakrát,
-zobrazí sa zoznam.
+Hint: Completion: use M-Tab (or Esc+Tab).  Type it twice to get a list.
 
-Tip: Pomocou M-p a M-n zobrazíte históriu príkazov.
+Hint: Use M-p and M-n to access the command history.
 
-Tip: Potrebujete vložiť znak? Stlačte Control-q a napíšte znak.
+Hint: Need to quote a character? Use Control-q and the character.
 
-Tip: Už vás tieto správy unavujú? Vypnite ich v menu Možnosti/Rozmiestnenie.
+Hint: Tired of these messages? Turn them off from the Options/Layout menu.
 
-Tip: Výber adresárov: pridajte lomku na koniec vyhľadávacieho vzoru.
+Hint: Selecting directories: add a slash to the end of the matching pattern.
 
-Tip: Ak váš terminál nemá funkčné klávesy, použite ESC+číselnú postupnosť.
+Hint: If your terminal lacks functions keys, use the ESC+number sequence.
 
-Tip: Domovská stránka GNU Midnight Commander:
+Hint: The homepage of GNU Midnight Commander:
 http://www.midnight-commander.org/
 
-Tip: Hlásenia chýb posielajte na mc-devel@gnome.org
+Hint: Please send any bug reports to mc-devel@gnome.org
 
-Tip: Tabulátor mení váš aktuálny panel.
+Hint: Tab changes your current panel.
 
-Tip: VFS: stlačením Enter na súbore .tar preskúmate jeho obsah.
+Hint: VFS coolness: tap enter on a tar file to examine its contents.
 
-Tip: Máme aj peknú manuálovú stránku.
+Hint: We also have a nice manual page.
 
-Hint: Do you want Lynx-style navigation? Set it in the Configuration dialog.
+Hint: Do you want lynx-style navigation? Set it in the Configuration dialog.
 
-Tip: Makrá % fungujú aj na príkazovom riadku.
+Hint: % macros work even on the command line.
 
-Tip: M-! vám umožní spúšťať programy a vidieť výstup v prehliadači.
+Hint: M-! will allow you to execute programs and see the output in the
+viewer.
 
-Tip: Formát výpisu súborov je možné prispôsobiť. Podrobnosti nájdete v „man
-mc“.
+Hint: The file listing format can be customized; do "man mc" for details.
 
-Tip: %D/%T expanduje označené súbory v náprotivnom adresári.
+Hint: %D/%T expands to the tagged files in the opposite directory.
 
-Tip: Chcete čistý shell? Stlačte C-o a späť do MC sa prepnite oäť pomocou
-C-o.
+Hint: Want your plain shell? Press C-o, and get back to MC with C-o again.
 
-Tip: Nastavenie premennej CDPATH vám ušetrí písanie pri príkazoch cd.
+Hint: Setting the CDPATH variable can save you keystrokes in cd commands.
 
-Tip: Ak chcete vidieť súbory .*, zapnite si to v dialógu Konfigurácia.
+Hint: If you want to see your .* files, say so in the Configuration dialog.
 
-Tip: Ak chcete vidieť záložné súbory *~, zapnite si to v dialógu
-Konfigurácia.
+Hint: Want to see your *~ backup files? Set it in the Configuration dialog.
 
-Tip: Dopĺňanie funguje vo vstupných poliach všetkých dialógov. Stačí stlačiť
-M-Tab.
+Hint: Completion works on all input lines in all dialogs. Just press M-Tab.
 
-Tip: Na pomalých termináloch môže pomôcť prepínač -s.
+Hint: On slow terminals the -s flag may help.
 
-Tip: Nájdenie súboru: s nájdenými súbormi môžete pracovať pomocou tlačidla
-Panelizovať.
+Hint: Find File: you can work on the files found using the Panelize button.
 
-Tip: Chcete využiť komplexné hľadanie? Použite príkaz Externá panelizácia.
+Hint: Want to do complex searches? Use the External Panelize command.
 
-Tip: Ak chcete zmeniť adresár uprostred písania príkazu, použite M-c (rýchle
+Hint: To change directory halfway through typing a command, use M-c (quick
 cd).
 
-Tip: príkazy shellu nebudú fungovať, keď sa nachádzate na nelokálnom
-súborovom systéme.
+Note: Shell commands will not work when you are on a non-local file system.
 
-Tip: Vráťte späť zmazaný text pomocou C-y.
+Hint: Bring text back from the dead with C-y.
 
-Tip: Nefungujú niektoré z vašich klávesov? Pozrite sa na Možnosti/Učenie
-klávesov.
+Hint: Are some of your keys not working? Look at Options/Learn keys.
 
-Tip: Pomocou M-! zobrazíte výstup príkazu v prehliadači.
+Hint: To look at the output of a command in the viewer, use M-!
 
-Tip: F13 (alebo Shift-F3) vyvolá prehliadač v nespracovanom režime.
+Hint: F13 (or Shift-F3) invokes the viewer in raw mode.
 
-Tip: Premennou prostredia EDITOR môžete určiť editor pre F4.
+Hint: You may specify the editor for F4 with the shell variable EDITOR.
 
-Tip: Premennými prostredia VIEWER alebo PAGER môžete určiť externý
-prehliadač.
+Hint: You may specify the external viewer with the shell vars VIEWER or
+PAGER.
 
-Tip: Môžete zakázať všetky žiadosti o potvrdenie pomocou
-Možnosti/Konfigurácia.
+Hint: You can disable all requests for confirmation in Options/Confirmation.
 
 Hint: Leap to frequently used directories in a single bound with C-.
 
-Tip: Prístup k anonymnému FTP z mc získate napísaním „cd ftp://machine.edu“
+Hint: You can do anonymous FTP with mc by typing 'cd ftp://machine.edu'
 
-Tip: FTP je súčasťou aplikácie Midnight Commander, pozrite si menu
-Súbor/Pripojenie FTP.
+Hint: FTP is built in the Midnight Commander, check the File/FTP link menu.
 
-Tip: M-t rýchlo zmení režim výpisu.
+Hint: M-t changes quickly the listing mode.
 
-Tip: Môžete uviesť meno používateľa v príkaze ftps: 'cd
-ftp://používateľ@počítač'
+Hint: You can specify the username when doing ftps: 'cd
+ftp://user@machine.edu'
 
-Tip: Stlačením Enter na súbore .rpm môžete prechádzať súbory v RPM.
+Hint: You can browse RPM files by tapping enter on top of an rpm file.
 
-Tip: Adresáre v dialógovom okne výberu môžete označiť pridaním lomky.
+Hint: To mark directories on the select dialog box, append a slash.
 
-Tip: Na kopírovanie a vkladanie pomocou myši môže byť potrebné podržať
-Shift.
+Hint: To use the mouse cut and paste may require holding the shift key
 
 Hint: Key frequently visited ftp sites in the hotlist: type C-.
 

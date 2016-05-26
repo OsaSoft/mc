@@ -1,7 +1,7 @@
 /*
    Functions for escaping and unescaping strings
 
-   Copyright (C) 2009-2016
+   Copyright (C) 2009-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -81,8 +81,6 @@ strutils_escape (const char *src, gsize src_len, const char *escaped_chars,
             case '\0':
                 g_string_append (ret, "\\0");
                 continue;
-            default:
-                break;
             }
         }
 
@@ -147,8 +145,6 @@ strutils_unescape (const char *src, gsize src_len, const char *unescaped_chars,
                 case '0':
                     g_string_append_c (ret, '\0');
                     continue;
-                default:
-                    break;
                 }
             }
 

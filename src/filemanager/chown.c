@@ -1,7 +1,7 @@
 /*
    Chown command -- for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -81,9 +81,7 @@ static WListbox *l_user, *l_group;
 /* *INDENT-OFF* */
 static struct
 {
-    int ret_cmd;
-    button_flags_t flags;
-    int y, len;
+    int ret_cmd, flags, y, len;
     const char *text;
 } chown_but[BUTTONS] = {
     { B_SETALL, NORMAL_BUTTON,  5, 0, N_("Set &all") },
@@ -94,7 +92,7 @@ static struct
 };
 
 /* summary length of three buttons */
-static int blen = 0;
+static unsigned int blen = 0;
 
 static struct {
     int y;
@@ -220,22 +218,22 @@ init_chown (void)
     l_user = listbox_new (3, 4, GH - 2, GW - 2, FALSE, NULL);
     add_widget (ch_dlg, l_user);
     /* add field for unknown names (numbers) */
-    listbox_add_item (l_user, LISTBOX_APPEND_AT_END, 0, _("<Unknown user>"), NULL, FALSE);
+    listbox_add_item (l_user, LISTBOX_APPEND_AT_END, 0, _("<Unknown user>"), NULL);
     /* get and put user names in the listbox */
     setpwent ();
     while ((l_pass = getpwent ()) != NULL)
-        listbox_add_item (l_user, LISTBOX_APPEND_SORTED, 0, l_pass->pw_name, NULL, FALSE);
+        listbox_add_item (l_user, LISTBOX_APPEND_SORTED, 0, l_pass->pw_name, NULL);
     endpwent ();
 
     add_widget (ch_dlg, groupbox_new (2, 4 + GW, GH, GW, _("Group name")));
     l_group = listbox_new (3, 5 + GW, GH - 2, GW - 2, FALSE, NULL);
     add_widget (ch_dlg, l_group);
     /* add field for unknown names (numbers) */
-    listbox_add_item (l_group, LISTBOX_APPEND_AT_END, 0, _("<Unknown group>"), NULL, FALSE);
+    listbox_add_item (l_group, LISTBOX_APPEND_AT_END, 0, _("<Unknown group>"), NULL);
     /* get and put group names in the listbox */
     setgrent ();
     while ((l_grp = getgrent ()) != NULL)
-        listbox_add_item (l_group, LISTBOX_APPEND_SORTED, 0, l_grp->gr_name, NULL, FALSE);
+        listbox_add_item (l_group, LISTBOX_APPEND_SORTED, 0, l_grp->gr_name, NULL);
     endgrent ();
 
     add_widget (ch_dlg, groupbox_new (2, 5 + GW * 2, GH, GW, _("File")));
@@ -438,9 +436,6 @@ chown_cmd (void)
                     apply_chowns (new_user, new_group);
                 break;
             }
-
-        default:
-            break;
         }                       /* switch */
 
         if (current_panel->marked && ch_dlg->ret_value != B_CANCEL)

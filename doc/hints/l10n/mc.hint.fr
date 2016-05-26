@@ -31,7 +31,8 @@ contenu.
 
 Astuce: Une documentation complète est disponible: "man mc".
 
-Hint: Do you want Lynx-style navigation? Set it in the Configuration dialog.
+Astuce: Vous cherchez une navigation à la Lynx? Activez-là dans le menu
+Options/Configuration.
 
 Astuce: Les macros % fonctionnent également dans la ligne de commande.
 

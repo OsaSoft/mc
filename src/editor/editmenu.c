@@ -1,7 +1,7 @@
 /*
    Editor menu definitions and initialisation
 
-   Copyright (C) 1996-2016
+   Copyright (C) 1996-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -268,7 +268,17 @@ edit_drop_menu_cmd (WDialog * h, int which)
     WMenuBar *menubar;
 
     menubar = find_menubar (h);
-    menubar_activate (menubar, drop_menus != 0, which);
+
+    if (!menubar->is_active)
+    {
+        menubar->is_active = TRUE;
+        menubar->is_dropped = (drop_menus != 0);
+        if (which >= 0)
+            menubar->selected = which;
+
+        menubar->previous_widget = dlg_get_current_widget_id (h);
+        dlg_select_widget (menubar);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -276,7 +286,7 @@ edit_drop_menu_cmd (WDialog * h, int which)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-edit_init_menu (WMenuBar * menubar)
+edit_init_menu (struct WMenuBar *menubar)
 {
     menubar_add_menu (menubar,
                       create_menu (_("&File"), create_file_menu (), "[Internal File Editor]"));

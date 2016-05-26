@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-05-07 18:23+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2014-09-04 10:10+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: German (Switzerland) (http://www.transifex.com/projects/p/mc/"
 "language/de_CH/)\n"
@@ -466,12 +466,7 @@ msgstr ""
 msgid "Directory cache expired for %s"
 msgstr ""
 
-#, c-format
-msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
-msgstr ""
-
-#, c-format
-msgid "%s: %s: %s %lld bytes transferred"
+msgid "bytes transferred"
 msgstr ""
 
 msgid "Starting linear transfer..."
@@ -555,7 +550,7 @@ msgid "Error"
 msgstr ""
 
 #, c-format
-msgid "%s (%d)"
+msgid "%d: %s"
 msgstr ""
 
 msgid "&Abort"
@@ -706,7 +701,7 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr ""
 
-msgid "Two files are required to envoke the diffviewer."
+msgid "Two files are required to evoke the diffviewer."
 msgstr ""
 
 msgid "Background protocol error"
@@ -1495,7 +1490,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1823,9 +1818,6 @@ msgstr ""
 msgid "Pa&ge scrolling"
 msgstr ""
 
-msgid "Center &scrolling"
-msgstr ""
-
 msgid "&Mouse page scrolling"
 msgstr ""
 
@@ -1857,16 +1849,13 @@ msgstr ""
 msgid "&Full file list"
 msgstr ""
 
-msgid "&Brief file list:"
+msgid "&Brief file list"
 msgstr ""
 
 msgid "&Long file list"
 msgstr ""
 
 msgid "&User defined:"
-msgstr ""
-
-msgid "columns"
 msgstr ""
 
 msgid "User &mini status"
@@ -2186,10 +2175,6 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "'%s' is not a symbolic link"
-msgstr ""
-
-#, c-format
 msgid "Symlink '%s' points to:"
 msgstr ""
 
@@ -2202,6 +2187,10 @@ msgstr ""
 
 #, c-format
 msgid "edit symlink: %s"
+msgstr ""
+
+#, c-format
+msgid "'%s' is not a symbolic link"
 msgstr ""
 
 msgid "FTP to machine"
@@ -2475,7 +2464,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file \"%s\"\n"
+"Cannot read source file\"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2888,14 +2877,14 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr ""
 
 #, c-format
-msgid "Type:       %s"
+msgid "Type:      %s"
 msgstr ""
 
 msgid "non-local vfs"
 msgstr ""
 
 #, c-format
-msgid "Device:     %s"
+msgid "Device:    %s"
 msgstr ""
 
 #, c-format
@@ -2903,16 +2892,16 @@ msgid "Filesystem: %s"
 msgstr ""
 
 #, c-format
-msgid "Accessed:   %s"
+msgid "Accessed:  %s"
 msgstr ""
 
 #, c-format
-msgid "Modified:   %s"
+msgid "Modified:  %s"
 msgstr ""
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:    %s"
+msgid "Changed:   %s"
 msgstr ""
 
 #, c-format
@@ -2920,7 +2909,7 @@ msgid "Dev. type: major %lu, minor %lu"
 msgstr ""
 
 #, c-format
-msgid "Size:       %s"
+msgid "Size:      %s"
 msgstr ""
 
 #, c-format
@@ -2930,19 +2919,19 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "Owner:      %s/%s"
+msgid "Owner:     %s/%s"
 msgstr ""
 
 #, c-format
-msgid "Links:      %d"
+msgid "Links:     %d"
 msgstr ""
 
 #, c-format
-msgid "Mode:       %s (%04o)"
+msgid "Mode:      %s (%04o)"
 msgstr ""
 
 #, c-format
-msgid "Location:   %Xh:%Xh"
+msgid "Location:  %Xh:%Xh"
 msgstr ""
 
 msgid "&Equal split"
@@ -3921,7 +3910,8 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-msgid "sftp: Failure establishing SSH session"
+#, c-format
+msgid "sftp: Failure establishing SSH session: (%d)"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"

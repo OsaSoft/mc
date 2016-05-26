@@ -1,7 +1,7 @@
 /*
    Internal stuff of color setup
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -54,7 +54,7 @@ typedef struct mc_tty_color_table_struct
 
 /*** file scope variables ************************************************************************/
 
-static mc_tty_color_table_t const color_table[] = {
+mc_tty_color_table_t const color_table[] = {
     {"black", COLOR_BLACK},
     {"gray", COLOR_BLACK + COLOR_INTENSITY},
     {"red", COLOR_RED},
@@ -81,7 +81,7 @@ static mc_tty_color_table_t const color_table[] = {
     {NULL, 0}
 };
 
-static mc_tty_color_table_t const attributes_table[] = {
+mc_tty_color_table_t const attributes_table[] = {
     {"bold", A_BOLD},
 #ifdef A_ITALIC                 /* available since ncurses-5.9-20130831 / slang-pre2.3.0-107 */
     {"italic", A_ITALIC},

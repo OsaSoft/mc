@@ -1,7 +1,7 @@
 /*
    Editor dialogs for high level editing commands
 
-   Copyright (C) 2009-2016
+   Copyright (C) 2009-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -163,9 +163,9 @@ editcmd_dialog_search_show (WEdit * edit)
     mc_search_free (edit->search);
 
 #ifdef HAVE_CHARSET
-    edit->search = mc_search_new (edit->last_search_string, cp_source);
+    edit->search = mc_search_new (edit->last_search_string, -1, cp_source);
 #else
-    edit->search = mc_search_new (edit->last_search_string, NULL);
+    edit->search = mc_search_new (edit->last_search_string, -1, NULL);
 #endif
     if (edit->search != NULL)
     {
@@ -317,7 +317,7 @@ editcmd_dialog_raw_key_query (const char *heading, const char *query, gboolean c
 
     w = str_term_width1 (heading) + 6;
     wq = str_term_width1 (query);
-    w = MAX (w, wq + 3 * 2 + 1 + 2);
+    w = max (w, wq + 3 * 2 + 1 + 2);
 
     raw_dlg =
         dlg_create (TRUE, 0, 0, cancel ? 7 : 5, w, dialog_colors, editcmd_dialog_raw_key_query_cb,
@@ -346,7 +346,7 @@ editcmd_dialog_raw_key_query (const char *heading, const char *query, gboolean c
 char *
 editcmd_dialog_completion_show (const WEdit * edit, int max_len, GString ** compl, int num_compl)
 {
-    const Widget *we = CONST_WIDGET (edit);
+    const Widget *we = WIDGET (edit);
     int start_x, start_y, offset, i;
     char *curr = NULL;
     WDialog *compl_dlg;
@@ -390,8 +390,7 @@ editcmd_dialog_completion_show (const WEdit * edit, int max_len, GString ** comp
 
     /* fill the listbox with the completions */
     for (i = num_compl - 1; i >= 0; i--)        /* reverse order */
-        listbox_add_item (compl_list, LISTBOX_APPEND_AT_END, 0, (char *) compl[i]->str, NULL,
-                          FALSE);
+        listbox_add_item (compl_list, LISTBOX_APPEND_AT_END, 0, (char *) compl[i]->str, NULL);
 
     /* pop up the dialog and apply the chosen completion */
     if (dlg_run (compl_dlg) == B_ENTER)
@@ -462,7 +461,7 @@ editcmd_dialog_select_definition_show (WEdit * edit, char *match_expr, int max_l
         label_def =
             g_strdup_printf ("%s -> %s:%ld", def_hash[i].short_define, def_hash[i].filename,
                              def_hash[i].line);
-        listbox_add_item (def_list, LISTBOX_APPEND_AT_END, 0, label_def, &def_hash[i], FALSE);
+        listbox_add_item (def_list, LISTBOX_APPEND_AT_END, 0, label_def, &def_hash[i]);
         g_free (label_def);
     }
 

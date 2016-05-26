@@ -1,7 +1,7 @@
 /*
    Virtual File System: GNU Tar file system.
 
-   Copyright (C) 1995-2016
+   Copyright (C) 1995-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 #ifdef hpux
 /* major() and minor() macros (among other things) defined here for hpux */
@@ -303,9 +304,8 @@ tar_open_archive_int (struct vfs_class *me, const vfs_path_t * vpath, struct vfs
 
     /* Find out the method to handle this tar file */
     type = get_compression_type (result, archive->name);
-    if (type == COMPRESSION_NONE)
-        mc_lseek (result, 0, SEEK_SET);
-    else
+    mc_lseek (result, 0, SEEK_SET);
+    if (type != COMPRESSION_NONE)
     {
         char *s;
         vfs_path_t *tmp_vpath;
@@ -355,10 +355,10 @@ tar_get_next_record (struct vfs_s_super *archive, int tard)
 
     (void) archive;
 
-    n = mc_read (tard, rec_buf.charptr, sizeof (rec_buf.charptr));
-    if (n != sizeof (rec_buf.charptr))
+    n = mc_read (tard, rec_buf.charptr, RECORDSIZE);
+    if (n != RECORDSIZE)
         return NULL;            /* An error has occurred */
-    current_tar_position += sizeof (rec_buf.charptr);
+    current_tar_position += RECORDSIZE;
     return &rec_buf;
 }
 
@@ -369,8 +369,8 @@ tar_skip_n_records (struct vfs_s_super *archive, int tard, size_t n)
 {
     (void) archive;
 
-    mc_lseek (tard, n * sizeof (rec_buf.charptr), SEEK_CUR);
-    current_tar_position += n * sizeof (rec_buf.charptr);
+    mc_lseek (tard, n * RECORDSIZE, SEEK_CUR);
+    current_tar_position += n * RECORDSIZE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -423,8 +423,6 @@ tar_fill_stat (struct vfs_s_super *archive, struct stat *st, union record *heade
             st->st_rdev =
                 (tar_from_oct (8, header->header.devmajor) << 8) |
                 tar_from_oct (8, header->header.devminor);
-        default:
-            break;
         }
     default:
         st->st_uid = tar_from_oct (8, header->header.uid);
@@ -802,9 +800,6 @@ tar_open_archive (struct vfs_s_super *archive, const vfs_path_t * vpath,
 
             case STATUS_EOF:
                 return 0;
-
-            default:
-                break;
             }
 
             /* Record of zeroes */
@@ -812,8 +807,6 @@ tar_open_archive (struct vfs_s_super *archive, const vfs_path_t * vpath,
             /* FALL THRU */
             /* exit from loop */
         case STATUS_EOF:       /* End of archive */
-            break;
-        default:
             break;
         }
         break;

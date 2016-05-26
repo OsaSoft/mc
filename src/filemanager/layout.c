@@ -1,7 +1,7 @@
 /*
    Panel layout module for the Midnight Commander
 
-   Copyright (C) 1995-2016
+   Copyright (C) 1995-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -55,7 +55,7 @@
 #include "src/viewer/mcviewer.h"        /* The view widget */
 #include "src/setup.h"
 #ifdef ENABLE_SUBSHELL
-#include "src/subshell/subshell.h"
+#include "src/subshell.h"
 #endif
 
 #include "command.h"
@@ -147,7 +147,13 @@ static int old_output_lines;
 
 /* Internal variables */
 static int equal_split;
+static int _menubar_visible;
 static int _output_lines;
+static gboolean _command_prompt;
+static int _keybar_visible;
+static int _message_visible;
+static gboolean _xterm_title;
+static int _free_space;
 
 static int height;
 
@@ -228,7 +234,7 @@ update_split (const WDialog * h)
         check_options[0].widget->state = panels_layout.vertical_equal ? 1 : 0;
     widget_redraw (WIDGET (check_options[0].widget));
 
-    tty_setcolor ((check_options[0].widget->state & C_BOOL) ? DISABLED_COLOR : COLOR_NORMAL);
+    tty_setcolor (check_options[0].widget->state & C_BOOL ? DISABLED_COLOR : COLOR_NORMAL);
 
     widget_move (h, 6, 5);
     if (panels_layout.horizontal_split)
@@ -330,46 +336,42 @@ layout_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
         return MSG_HANDLED;
 
     case MSG_POST_KEY:
+        _menubar_visible = check_options[1].widget->state & C_BOOL;
+        _command_prompt = (check_options[2].widget->state & C_BOOL) != 0;
+        _keybar_visible = check_options[3].widget->state & C_BOOL;
+        _message_visible = check_options[4].widget->state & C_BOOL;
+        _xterm_title = (check_options[5].widget->state & C_BOOL) != 0;
+        _free_space = check_options[6].widget->state & C_BOOL;
+
+        if (mc_global.tty.console_flag != '\0')
         {
-            int _menubar_visible, _command_prompt, _keybar_visible, _message_visible;
+            int minimum;
 
-            _menubar_visible = check_options[1].widget->state & C_BOOL;
-            _command_prompt = check_options[2].widget->state & C_BOOL;
-            _keybar_visible = check_options[3].widget->state & C_BOOL;
-            _message_visible = check_options[4].widget->state & C_BOOL;
-
-            if (mc_global.tty.console_flag != '\0')
+            if (_output_lines < 0)
+                _output_lines = 0;
+            height = LINES - _keybar_visible - (_command_prompt ? 1 : 0) -
+                _menubar_visible - _output_lines - _message_visible;
+            minimum = MINHEIGHT * (1 + panels_layout.horizontal_split);
+            if (height < minimum)
             {
-                int minimum;
-
-                if (_output_lines < 0)
-                    _output_lines = 0;
-                height =
-                    LINES - _keybar_visible - _command_prompt - _menubar_visible - _output_lines -
-                    _message_visible;
-                minimum = MINHEIGHT * (1 + panels_layout.horizontal_split);
-                if (height < minimum)
-                {
-                    _output_lines -= minimum - height;
-                    height = minimum;
-                }
+                _output_lines -= minimum - height;
+                height = minimum;
             }
-            else
-                height =
-                    LINES - _keybar_visible - _command_prompt - _menubar_visible - _output_lines -
-                    _message_visible;
+        }
+        else
+            height = LINES - _keybar_visible - (_command_prompt ? 1 : 0) -
+                _menubar_visible - _output_lines - _message_visible;
 
-            if (old_output_lines != _output_lines)
-            {
-                old_output_lines = _output_lines;
-                tty_setcolor (mc_global.tty.console_flag != '\0' ? COLOR_NORMAL : DISABLED_COLOR);
-                widget_move (h, 9, 5 + 3 + output_lines_label_len);
-                tty_printf ("%02d", _output_lines);
-            }
+        if (old_output_lines != _output_lines)
+        {
+            old_output_lines = _output_lines;
+            tty_setcolor (mc_global.tty.console_flag != '\0' ? COLOR_NORMAL : DISABLED_COLOR);
+            widget_move (h, 9, 5 + 3 + output_lines_label_len);
+            tty_printf ("%02d", _output_lines);
         }
         return MSG_HANDLED;
 
-    case MSG_NOTIFY:
+    case MSG_ACTION:
         if (sender == WIDGET (radio_widget))
         {
             if (panels_layout.horizontal_split != radio_widget->sel)
@@ -461,6 +463,12 @@ init_layout (void)
     output_lines_label = _("Output lines:");
 
     /* save old params */
+    _menubar_visible = menubar_visible;
+    _command_prompt = command_prompt;
+    _keybar_visible = mc_global.keybar_visible;
+    _message_visible = mc_global.message_visible;
+    _xterm_title = xterm_title;
+    _free_space = free_space;
     old_output_lines = -1;
     _output_lines = output_lines;
 
@@ -628,7 +636,7 @@ layout_change (void)
        how the panel are split (horizontal/vertical),
        and a change of menu visibility. */
     update_menu ();
-    load_hint (TRUE);
+    load_hint (1);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -980,7 +988,13 @@ set_display_type (int num, panel_view_mode_t type)
     /* Restoring saved path from panels.ini for nonlist panel */
     /* when it's first creation (for example view_info) */
     if (old_widget == NULL && type != view_listing)
-        panels[num].last_saved_dir = _vfs_get_cwd ();
+    {
+        char *panel_dir;
+
+        panel_dir = _vfs_get_cwd ();
+        panels[num].last_saved_dir = g_strdup (panel_dir);
+        g_free (panel_dir);
+    }
 
     switch (type)
     {
@@ -1006,10 +1020,7 @@ set_display_type (int num, panel_view_mode_t type)
         else
             file_name = "";
 
-        mcview_load ((WView *) new_widget, 0, file_name, 0, 0, 0);
-        break;
-
-    default:
+        mcview_load ((struct mcview_struct *) new_widget, 0, file_name, 0);
         break;
     }
 
@@ -1088,7 +1099,7 @@ swap_panels (void)
     panel2 = PANEL (panels[1].widget);
 
     if (panels[0].type == view_listing && panels[1].type == view_listing &&
-        !mc_config_get_bool (mc_global.main_config, CONFIG_PANELS_SECTION, "simple_swap", FALSE))
+        !mc_config_get_bool (mc_main_config, CONFIG_PANELS_SECTION, "simple_swap", FALSE))
     {
         WPanel panel;
 
@@ -1199,7 +1210,7 @@ get_display_type (int idx)
 
 /* --------------------------------------------------------------------------------------------- */
 
-Widget *
+struct Widget *
 get_panel_widget (int idx)
 {
     return panels[idx].widget;

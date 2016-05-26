@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Authors:
@@ -138,7 +138,7 @@ hotkey_draw (Widget * w, const hotkey_t hotkey, gboolean focused)
 
 void
 widget_init (Widget * w, int y, int x, int lines, int cols,
-             widget_cb_fn callback, widget_mouse_cb_fn mouse_callback)
+             widget_cb_fn callback, mouse_h mouse_handler)
 {
     w->x = x;
     w->y = y;
@@ -146,13 +146,9 @@ widget_init (Widget * w, int y, int x, int lines, int cols,
     w->lines = lines;
     w->pos_flags = WPOS_KEEP_DEFAULT;
     w->callback = callback;
-    w->mouse_callback = mouse_callback;
+    w->mouse = mouse_handler;
     w->set_options = widget_default_set_options_callback;
     w->owner = NULL;
-    w->mouse.forced_capture = FALSE;
-    w->mouse.capture = FALSE;
-    w->mouse.last_msg = MSG_MOUSE_NONE;
-    w->mouse.last_buttons_down = 0;
 
     /* Almost all widgets want to put the cursor in a suitable place */
     w->options = W_WANT_CURSOR;
@@ -281,7 +277,7 @@ widget_erase (Widget * w)
 gboolean
 widget_is_active (const void *w)
 {
-    return (w == CONST_WIDGET (w)->owner->current->data);
+    return (w == WIDGET (w)->owner->current->data);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -364,10 +360,7 @@ mouse_get_local (const Gpm_Event * global, const Widget * w)
 
     local.buttons = global->buttons;
 #ifdef HAVE_LIBGPM
-    local.clicks = 0;
-    local.margin = 0;
     local.modifiers = 0;
-    local.vc = 0;
 #endif
     local.x = global->x - w->x;
     local.y = global->y - w->y;

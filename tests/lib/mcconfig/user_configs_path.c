@@ -1,7 +1,7 @@
 /*
    libmc - check mcconfig submodule. Get full paths to user's config files.
 
-   Copyright (C) 2011-2016
+   Copyright (C) 2011-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -37,7 +37,7 @@
 
 #define HOME_DIR "/home/testuser"
 
-#if MC_HOMEDIR_XDG
+#ifdef MC_HOMEDIR_XDG
 #define CONF_MAIN HOME_DIR PATH_SEP_STR ".config"
 #define CONF_DATA HOME_DIR PATH_SEP_STR ".local" PATH_SEP_STR "share"
 #define CONF_CACHE HOME_DIR PATH_SEP_STR ".cache"
@@ -54,7 +54,7 @@ static void
 setup (void)
 {
     g_setenv ("HOME", HOME_DIR, TRUE);
-#if MC_HOMEDIR_XDG
+#ifdef MC_HOMEDIR_XDG
     g_setenv ("XDG_CONFIG_HOME", CONF_MAIN, TRUE);
     g_setenv ("XDG_DATA_HOME", CONF_DATA, TRUE);
     g_setenv ("XDG_CACHE_HOME", CONF_CACHE, TRUE);
@@ -88,99 +88,95 @@ static const struct test_user_config_paths_ds
         CONF_MAIN,
         MC_CONFIG_FILE
     },
-    { /* 1. */
+    { /* 0. */
         CONF_MAIN,
         MC_FHL_INI_FILE
     },
-    { /* 2. */
+    { /* 0. */
         CONF_MAIN,
         MC_HOTLIST_FILE
     },
-    { /* 3. */
+    { /* 0. */
         CONF_MAIN,
         GLOBAL_KEYMAP_FILE
     },
-    { /* 4. */
+    { /* 0. */
         CONF_MAIN,
         MC_USERMENU_FILE
     },
-    { /* 5. */
+    { /* 0. */
         CONF_MAIN,
         EDIT_SYNTAX_FILE
     },
-    { /* 6. */
+    { /* 0. */
         CONF_MAIN,
         EDIT_HOME_MENU
     },
-    { /* 7. */
+    { /* 0. */
         CONF_MAIN,
         EDIT_DIR PATH_SEP_STR "edit.indent.rc"
     },
-    { /* 8. */
+    { /* 0. */
         CONF_MAIN,
         EDIT_DIR PATH_SEP_STR "edit.spell.rc"
     },
-    { /* 9. */
+    { /* 0. */
         CONF_MAIN,
         MC_PANELS_FILE
     },
-    { /* 10. */
+    { /* 0. */
         CONF_MAIN,
         MC_FILEBIND_FILE
     },
-    { /* 11. */
+    { /* 0. */
         CONF_DATA,
         MC_SKINS_SUBDIR
     },
-    { /* 12. */
+    { /* 0. */
         CONF_DATA,
         FISH_PREFIX
     },
-    { /* 13. */
-        CONF_DATA,
-        "ashrc"
-    },
-    { /* 14. */
+    { /* 0. */
         CONF_DATA,
         "bashrc"
     },
-    { /* 15. */
+    { /* 0. */
         CONF_DATA,
         "inputrc"
     },
-    { /* 16. */
+    { /* 0. */
         CONF_DATA,
         MC_EXTFS_DIR
     },
-    { /* 17. */
+    { /* 0. */
         CONF_DATA,
         MC_HISTORY_FILE
     },
-    { /* 18. */
+    { /* 0. */
         CONF_DATA,
         MC_FILEPOS_FILE
     },
-    { /* 19. */
+    { /* 0. */
         CONF_DATA,
         EDIT_CLIP_FILE
     },
-    { /* 20. */
+    { /* 0. */
         CONF_DATA,
         MC_MACRO_FILE
     },
-    { /* 21. */
+    { /* 0. */
         CONF_CACHE,
         "mc.log"
     },
-    { /* 22. */
+    { /* 0. */
         CONF_CACHE,
         MC_TREESTORE_FILE
     },
-    { /* 23. */
+    { /* 0. */
         CONF_CACHE,
         EDIT_TEMP_FILE
     },
-    { /* 24. */
+    { /* 0. */
         CONF_CACHE,
         EDIT_BLOCK_FILE
     },
@@ -203,8 +199,7 @@ START_PARAMETRIZED_TEST (test_user_config_paths, test_user_config_paths_ds)
         char *expected_file_path;
 
         expected_file_path =
-            g_build_filename (data->input_base_dir, MC_USERCONF_DIR, data->input_file_name,
-                              (char *) NULL);
+            g_build_filename (data->input_base_dir, MC_USERCONF_DIR, data->input_file_name, NULL);
         mctest_assert_str_eq (actual_result, expected_file_path);
         g_free (expected_file_path);
     }
@@ -234,10 +229,11 @@ main (void)
     suite_add_tcase (s, tc_core);
     sr = srunner_create (s);
     srunner_set_log (sr, "user_configs_path.log");
-    srunner_run_all (sr, CK_ENV);
+    /* srunner_set_fork_status (sr, CK_NOFORK); */
+    srunner_run_all (sr, CK_NORMAL);
     number_failed = srunner_ntests_failed (sr);
     srunner_free (sr);
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (number_failed == 0) ? 0 : 1;
 }
 
 /* --------------------------------------------------------------------------------------------- */

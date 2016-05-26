@@ -2,7 +2,6 @@
 #define MC__TEST
 
 #include <config.h>
-#include <stdlib.h>
 #include <check.h>
 
 #include "lib/global.h"
@@ -26,44 +25,30 @@
 }
 
 #define mctest_assert_ptr_eq(actual_pointer, etalon_pointer) { \
-    ck_assert_msg ( actual_pointer == etalon_pointer, \
+    fail_unless ( actual_pointer == etalon_pointer, \
         "%s(%p) pointer should be equal to %s(%p)\n", \
         #actual_pointer, actual_pointer, #etalon_pointer , etalon_pointer \
     );\
 }
 
 #define mctest_assert_ptr_ne(actual_pointer, etalon_pointer) { \
-    ck_assert_msg ( actual_pointer != etalon_pointer, \
+    fail_unless ( actual_pointer != etalon_pointer, \
         "%s(%p) pointer should not be equal to %s(%p)\n", \
         #actual_pointer, actual_pointer, #etalon_pointer , etalon_pointer \
     );\
 }
 
 #define mctest_assert_null(actual_pointer) { \
-    ck_assert_msg( \
+    fail_unless( \
         (void *) actual_pointer == NULL, \
         "%s(%p) variable should be NULL", #actual_pointer, actual_pointer \
     ); \
 }
 
 #define mctest_assert_not_null(actual_pointer) { \
-    ck_assert_msg( \
-        (void *) actual_pointer != NULL, \
+    fail_if( \
+        (void *) actual_pointer == NULL, \
         "%s(nil) variable should not be NULL", #actual_pointer \
-    ); \
-}
-
-#define mctest_assert_true(actual_pointer) { \
-    ck_assert_msg( \
-        (int) actual_pointer != 0, \
-        "%s variable should be TRUE", #actual_pointer \
-    ); \
-}
-
-#define mctest_assert_false(actual_pointer) { \
-    ck_assert_msg( \
-        (int) actual_pointer == 0, \
-        "%s variable should be TRUE", #actual_pointer \
     ); \
 }
 

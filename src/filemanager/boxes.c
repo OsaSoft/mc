@@ -1,13 +1,13 @@
 /*
    Some misc dialog boxes for the program.
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
    Miguel de Icaza, 1994, 1995
    Jakub Jelinek, 1995
-   Andrew Borodin <aborodin@vmail.ru>, 2009-2015
+   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2011, 2012, 2013
 
    This file is part of the Midnight Commander.
 
@@ -93,15 +93,14 @@
 
 /*** file scope variables ************************************************************************/
 
-static unsigned long configure_old_esc_mode_id, configure_time_out_id;
+unsigned long configure_old_esc_mode_id, configure_time_out_id;
 
-/* Index in list_types[] for "brief" */
-static const int panel_listing_brief_idx = 1;
 /* Index in list_types[] for "user defined" */
 static const int panel_listing_user_idx = 3;
 
 static char **status_format;
-static unsigned long panel_listing_types_id, panel_user_format_id, panel_brief_cols_id;
+static int listing_user_hotkey = 'u';
+static unsigned long panel_listing_types_id, panel_user_format_id;
 static unsigned long mini_user_status_id, mini_user_format_id;
 
 #ifdef HAVE_CHARSET
@@ -112,8 +111,8 @@ static int new_display_codepage;
 static unsigned long ftpfs_always_use_proxy_id, ftpfs_proxy_host_id;
 #endif /* ENABLE_VFS && ENABLE_VFS_FTP */
 
-static GPtrArray *skin_names;
-static gchar *current_skin_name;
+GPtrArray *skin_names;
+gchar *current_skin_name;
 
 #ifdef ENABLE_BACKGROUND
 static WListbox *bg_list = NULL;
@@ -128,7 +127,7 @@ configure_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, voi
 {
     switch (msg)
     {
-    case MSG_NOTIFY:
+    case MSG_ACTION:
         /* message from "Single press" checkbutton */
         if (sender != NULL && sender->id == configure_old_esc_mode_id)
         {
@@ -167,7 +166,7 @@ skin_apply (const gchar * skin_override)
     panel_init ();
     repaint_screen ();
 
-    mc_error_message (&mcerror, NULL);
+    mc_error_message (&mcerror);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -204,7 +203,7 @@ sel_skin_button (WButton * button, int action)
     skin_list = listbox_new (1, 1, 11, 22, FALSE, NULL);
     skin_name = "default";
     listbox_add_item (skin_list, LISTBOX_APPEND_AT_END, 0, skin_name_to_label (skin_name),
-                      (void *) skin_name, FALSE);
+                      (void *) skin_name);
 
     if (strcmp (skin_name, current_skin_name) == 0)
         listbox_select_entry (skin_list, 0);
@@ -215,7 +214,7 @@ sel_skin_button (WButton * button, int action)
         if (strcmp (skin_name, "default") != 0)
         {
             listbox_add_item (skin_list, LISTBOX_APPEND_AT_END, 0, skin_name_to_label (skin_name),
-                              (void *) skin_name, FALSE);
+                              (void *) skin_name);
             if (strcmp (skin_name, current_skin_name) == 0)
                 listbox_select_entry (skin_list, pos);
             pos++;
@@ -250,24 +249,76 @@ panel_listing_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
 
     switch (msg)
     {
-    case MSG_NOTIFY:
+    case MSG_KEY:
+        if (parm == '\n')
+        {
+            Widget *wi;
+
+            wi = dlg_find_by_id (h, panel_listing_types_id);
+            if (widget_is_active (wi))
+            {
+                WInput *in;
+
+                in = INPUT (dlg_find_by_id (h, mini_user_format_id));
+                input_assign_text (in, status_format[RADIO (wi)->sel]);
+                dlg_stop (h);
+                return MSG_HANDLED;
+            }
+
+            wi = dlg_find_by_id (h, panel_user_format_id);
+            if (widget_is_active (wi))
+            {
+                h->ret_value = B_USER + 6;
+                dlg_stop (h);
+                return MSG_HANDLED;
+            }
+
+            wi = dlg_find_by_id (h, mini_user_format_id);
+            if (widget_is_active (wi))
+            {
+                h->ret_value = B_USER + 7;
+                dlg_stop (h);
+                return MSG_HANDLED;
+            }
+        }
+
+        if (g_ascii_tolower (parm) == listing_user_hotkey)
+        {
+            Widget *wi;
+
+            wi = dlg_find_by_id (h, panel_user_format_id);
+            if (widget_is_active (wi))
+            {
+                wi = dlg_find_by_id (h, mini_user_format_id);
+                if (widget_is_active (wi))
+                {
+                    WRadio *r;
+
+                    r = RADIO (dlg_find_by_id (h, panel_listing_types_id));
+                    r->pos = r->sel = panel_listing_user_idx;
+                    dlg_select_widget (WIDGET (r));     /* force redraw */
+                    send_message (h, r, MSG_ACTION, 0, NULL);
+                    return MSG_HANDLED;
+                }
+            }
+        }
+        return MSG_NOT_HANDLED;
+
+    case MSG_ACTION:
         if (sender != NULL && sender->id == panel_listing_types_id)
         {
             WCheck *ch;
-            WInput *in1, *in2, *in3;
+            WInput *in1, *in2;
 
             in1 = INPUT (dlg_find_by_id (h, panel_user_format_id));
-            in2 = INPUT (dlg_find_by_id (h, panel_brief_cols_id));
             ch = CHECK (dlg_find_by_id (h, mini_user_status_id));
-            in3 = INPUT (dlg_find_by_id (h, mini_user_format_id));
+            in2 = INPUT (dlg_find_by_id (h, mini_user_format_id));
 
             if (!(ch->state & C_BOOL))
-                input_assign_text (in3, status_format[RADIO (sender)->sel]);
-            input_update (in1, FALSE);
+                input_assign_text (in2, status_format[RADIO (sender)->sel]);
             input_update (in2, FALSE);
-            input_update (in3, FALSE);
+            input_update (in1, FALSE);
             widget_disable (WIDGET (in1), RADIO (sender)->sel != panel_listing_user_idx);
-            widget_disable (WIDGET (in2), RADIO (sender)->sel != panel_listing_brief_idx);
             return MSG_HANDLED;
         }
 
@@ -371,7 +422,7 @@ confvfs_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 {
     switch (msg)
     {
-    case MSG_NOTIFY:
+    case MSG_ACTION:
         /* message from "Always use ftp proxy" checkbutton */
         if (sender != NULL && sender->id == ftpfs_always_use_proxy_id)
         {
@@ -411,7 +462,7 @@ jobs_fill_listbox (WListbox * list)
         char *s;
 
         s = g_strconcat (state_str[tl->state], " ", tl->info, (char *) NULL);
-        listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, s, (void *) tl, FALSE);
+        listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, s, (void *) tl);
         g_free (s);
     }
 }
@@ -585,8 +636,7 @@ appearance_box (void)
         };
 
         if (quick_dialog (&qdlg) == B_ENTER)
-            mc_config_set_string (mc_global.main_config, CONFIG_APP_SECTION, "skin",
-                                  current_skin_name);
+            mc_config_set_string (mc_main_config, CONFIG_APP_SECTION, "skin", current_skin_name);
         else
             skin_apply (NULL);
     }
@@ -603,7 +653,7 @@ panel_options_box (void)
 {
     int simple_swap;
 
-    simple_swap = mc_config_get_bool (mc_global.main_config, CONFIG_PANELS_SECTION,
+    simple_swap = mc_config_get_bool (mc_main_config, CONFIG_PANELS_SECTION,
                                       "simple_swap", FALSE) ? 1 : 0;
     {
         const char *qsearch_options[] = {
@@ -630,14 +680,12 @@ panel_options_box (void)
                                     NULL),
                     QUICK_SEPARATOR (FALSE),
                     QUICK_SEPARATOR (FALSE),
-                    QUICK_SEPARATOR (FALSE),
                 QUICK_STOP_GROUPBOX,
             QUICK_NEXT_COLUMN,
                 QUICK_START_GROUPBOX (N_("Navigation")),
                     QUICK_CHECKBOX (N_("L&ynx-like motion"), &panels_options.navigate_with_arrows,
                                     NULL),
                     QUICK_CHECKBOX (N_("Pa&ge scrolling"), &panels_options.scroll_pages, NULL),
-                    QUICK_CHECKBOX (N_("Center &scrolling"), &panels_options.scroll_center, NULL),
                     QUICK_CHECKBOX (N_("&Mouse page scrolling"), &panels_options.mouse_move_pages,
                                     NULL),
                 QUICK_STOP_GROUPBOX,
@@ -665,7 +713,7 @@ panel_options_box (void)
             return;
     }
 
-    mc_config_set_bool (mc_global.main_config, CONFIG_PANELS_SECTION,
+    mc_config_set_bool (mc_main_config, CONFIG_PANELS_SECTION,
                         "simple_swap", (gboolean) (simple_swap & C_BOOL));
 
     if (!panels_options.fast_reload_msg_shown && panels_options.fast_reload)
@@ -684,8 +732,7 @@ panel_options_box (void)
 
 /* return list type */
 int
-panel_listing_box (WPanel * panel, int num, char **userp, char **minip, int *use_msformat,
-                   int *brief_cols)
+panel_listing_box (WPanel * panel, char **userp, char **minip, int *use_msformat, int num)
 {
     int result = -1;
     char *section = NULL;
@@ -703,7 +750,7 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, int *use
         for (i = 0; i < LIST_TYPES; i++)
             panel->user_status_format[i] = g_strdup (DEFAULT_USER_FORMAT);
         section = g_strconcat ("Temporal:", p, (char *) NULL);
-        if (!mc_config_has_group (mc_global.main_config, section))
+        if (!mc_config_has_group (mc_main_config, section))
         {
             g_free (section);
             section = g_strdup (p);
@@ -714,29 +761,21 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, int *use
 
     {
         int mini_user_status;
-        char panel_brief_cols_in[BUF_TINY];
-        char *panel_brief_cols_out = NULL;
         char *panel_user_format = NULL;
         char *mini_user_format = NULL;
+        const char *cp;
 
         /* Controls whether the array strings have been translated */
         const char *list_types[LIST_TYPES] = {
             N_("&Full file list"),
-            N_("&Brief file list:"),
+            N_("&Brief file list"),
             N_("&Long file list"),
             N_("&User defined:")
         };
 
         quick_widget_t quick_widgets[] = {
             /* *INDENT-OFF* */
-            QUICK_START_COLUMNS,
-                QUICK_RADIO (LIST_TYPES, list_types, &result, &panel_listing_types_id),
-            QUICK_NEXT_COLUMN,
-                QUICK_SEPARATOR (FALSE),
-                QUICK_LABELED_INPUT (_ ("columns"), input_label_right, panel_brief_cols_in,
-                                     "panel-brief-cols-input", &panel_brief_cols_out,
-                                     &panel_brief_cols_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
-            QUICK_STOP_COLUMNS,
+            QUICK_RADIO (LIST_TYPES, list_types, &result, &panel_listing_types_id),
             QUICK_INPUT (panel->user_format, "user-fmt-input", &panel_user_format,
                          &panel_user_format_id, FALSE, FALSE, INPUT_COMPLETE_NONE),
             QUICK_SEPARATOR (TRUE),
@@ -754,39 +793,28 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, int *use
             quick_widgets, panel_listing_callback, NULL
         };
 
+        /* get hotkey of user-defined format string */
+        cp = strchr (_(list_types[panel_listing_user_idx]), '&');
+        if (cp != NULL && *++cp != '\0')
+            listing_user_hotkey = g_ascii_tolower (*cp);
+
         mini_user_status = panel->user_mini_status;
         result = panel->list_type;
         status_format = panel->user_status_format;
 
-        g_snprintf (panel_brief_cols_in, sizeof (panel_brief_cols_in), "%d", panel->brief_cols);
-
-        if ((int) panel->list_type != panel_listing_brief_idx)
-            quick_widgets[4].options = W_DISABLED;
-
-        if ((int) panel->list_type != panel_listing_user_idx)
-            quick_widgets[6].options = W_DISABLED;
+        if (panel->list_type != panel_listing_user_idx)
+            quick_widgets[1].options = W_DISABLED;
 
         if (!mini_user_status)
-            quick_widgets[9].options = W_DISABLED;
+            quick_widgets[4].options = W_DISABLED;
 
         if (quick_dialog (&qdlg) == B_CANCEL)
             result = -1;
         else
         {
-            int cols;
-            char *error = NULL;
-
             *userp = panel_user_format;
             *minip = mini_user_format;
             *use_msformat = mini_user_status;
-
-            cols = strtol (panel_brief_cols_out, &error, 10);
-            if (*error == '\0')
-                *brief_cols = cols;
-            else
-                *brief_cols = panel->brief_cols;
-
-            g_free (panel_brief_cols_out);
         }
     }
 
@@ -808,9 +836,8 @@ panel_listing_box (WPanel * panel, int num, char **userp, char **minip, int *use
 const panel_field_t *
 sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
 {
-    char **sort_orders_names;
-    gsize i;
-    gsize sort_names_num = 0;
+    const char **sort_orders_names;
+    gsize sort_names_num, i;
     int sort_idx = 0;
     const panel_field_t *result = NULL;
 
@@ -827,7 +854,7 @@ sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
         quick_widget_t quick_widgets[] = {
             /* *INDENT-OFF* */
             QUICK_START_COLUMNS,
-                QUICK_RADIO (sort_names_num, (const char **) sort_orders_names, &sort_idx, NULL),
+                QUICK_RADIO (sort_names_num, sort_orders_names, &sort_idx, NULL),
             QUICK_NEXT_COLUMN,
                 QUICK_CHECKBOX (N_("Executable &first"), &op->exec_first, NULL),
                 QUICK_CHECKBOX (N_("Cas&e sensitive"), &op->case_sensitive, NULL),
@@ -851,7 +878,7 @@ sort_box (dir_sort_options_t * op, const panel_field_t * sort_field)
             result = sort_field;
     }
 
-    g_strfreev (sort_orders_names);
+    g_strfreev ((gchar **) sort_orders_names);
 
     return result;
 }
@@ -1036,7 +1063,6 @@ tree_box (const char *current_dir)
     if (dlg_run (dlg) == B_ENTER)
     {
         const vfs_path_t *selected_name;
-
         selected_name = tree_selected_name (mytree);
         val = g_strdup (vfs_path_as_str (selected_name));
     }
@@ -1142,7 +1168,7 @@ configure_vfs (void)
 char *
 cd_dialog (void)
 {
-    const Widget *w = CONST_WIDGET (current_panel);
+    const Widget *w = WIDGET (current_panel);
     char *my_str;
 
     quick_widget_t quick_widgets[] = {
@@ -1238,7 +1264,7 @@ jobs_cmd (void)
     }
 
     x += (int) n_but - 1;
-    cols = MAX (cols, x + 6);
+    cols = max (cols, x + 6);
 
     jobs_dlg = dlg_create (TRUE, 0, 0, lines, cols, dialog_colors, NULL, NULL,
                            "[Background jobs]", _("Background jobs"), DLG_CENTER);

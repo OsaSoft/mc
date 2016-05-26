@@ -1,7 +1,7 @@
 /*
    Execution routines for GNU Midnight Commander
 
-   Copyright (C) 2003-2016
+   Copyright (C) 2003-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -49,7 +49,7 @@
 #include "filemanager/layout.h" /* use_dash() */
 #include "consaver/cons.saver.h"
 #ifdef ENABLE_SUBSHELL
-#include "subshell/subshell.h"
+#include "subshell.h"
 #endif
 #include "setup.h"              /* clear_before_exec */
 
@@ -78,7 +78,7 @@ char *execute_get_external_cmd_opts_from_config (const char *command,
 static void
 edition_post_exec (void)
 {
-    tty_enter_ca_mode ();
+    do_enter_ca_mode ();
 
     /* FIXME: Missing on slang endwin? */
     tty_reset_prog_mode ();
@@ -122,7 +122,7 @@ edition_pre_exec (void)
      * Do not move this before endwin: in some systems rmcup includes
      * a call to clear screen, so it will end up clearing the shell screen.
      */
-    tty_exit_ca_mode ();
+    do_exit_ca_mode ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -233,8 +233,7 @@ execute_get_opts_from_cfg (const char *command, const char *default_str)
     char *str_from_config;
 
     str_from_config =
-        mc_config_get_string_raw (mc_global.main_config, CONFIG_EXT_EDITOR_VIEWER_SECTION, command,
-                                  NULL);
+        mc_config_get_string_raw (mc_main_config, CONFIG_EXT_EDITOR_VIEWER_SECTION, command, NULL);
 
     if (str_from_config == NULL)
     {
@@ -431,14 +430,22 @@ shell_execute (const char *command, int flags)
 #ifdef ENABLE_SUBSHELL
     if (mc_global.tty.use_subshell)
         if (subshell_state == INACTIVE)
-            do_execute (mc_global.shell->path, cmd ? cmd : command, flags | EXECUTE_AS_SHELL);
+            do_execute (mc_global.tty.shell, cmd ? cmd : command, flags | EXECUTE_AS_SHELL);
         else
             message (D_ERROR, MSG_ERROR, _("The shell is already running a command"));
     else
 #endif /* ENABLE_SUBSHELL */
-        do_execute (mc_global.shell->path, cmd ? cmd : command, flags | EXECUTE_AS_SHELL);
+        do_execute (mc_global.tty.shell, cmd ? cmd : command, flags | EXECUTE_AS_SHELL);
 
     g_free (cmd);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+void
+exec_shell (void)
+{
+    do_execute (mc_global.tty.shell, 0, 0);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -468,7 +475,7 @@ toggle_panels (void)
     tty_noecho ();
     tty_keypad (FALSE);
     tty_reset_screen ();
-    tty_exit_ca_mode ();
+    do_exit_ca_mode ();
     tty_raw_mode ();
     if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_RESTORE);
@@ -489,7 +496,7 @@ toggle_panels (void)
             fprintf (stderr, _("Type 'exit' to return to the Midnight Commander"));
             fprintf (stderr, "\n\r\n\r");
 
-            my_system (EXECUTE_INTERNAL, mc_global.shell->path, NULL);
+            my_system (EXECUTE_INTERNAL, mc_global.tty.shell, NULL);
         }
         else
             get_key_code (0);
@@ -498,7 +505,7 @@ toggle_panels (void)
     if (mc_global.tty.console_flag != '\0')
         handle_console (CONSOLE_SAVE);
 
-    tty_enter_ca_mode ();
+    do_enter_ca_mode ();
 
     tty_reset_prog_mode ();
     tty_keypad (TRUE);

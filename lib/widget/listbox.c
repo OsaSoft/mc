@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Authors:
@@ -10,7 +10,7 @@
    Jakub Jelinek, 1995
    Andrej Borsenkow, 1996
    Norbert Warmuth, 1997
-   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013, 2016
+   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013
 
    This file is part of the Midnight Commander.
 
@@ -39,6 +39,7 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
+#include "lib/tty/mouse.h"
 #include "lib/skin.h"
 #include "lib/strutil.h"
 #include "lib/util.h"           /* Q_() */
@@ -50,9 +51,6 @@
 const global_keymap_t *listbox_map = NULL;
 
 /*** file scope macro definitions ****************************************************************/
-
-/* Gives the position of the last item. */
-#define LISTBOX_LAST(l) (g_queue_is_empty ((l)->list) ? 0 : (int) g_queue_get_length ((l)->list) - 1)
 
 /*** file scope type declarations ****************************************************************/
 
@@ -77,10 +75,7 @@ static void
 listbox_entry_free (void *data)
 {
     WLEntry *e = data;
-
     g_free (e->text);
-    if (e->free_data)
-        g_free (e->data);
     g_free (e);
 }
 
@@ -217,58 +212,53 @@ listbox_check_hotkey (WListbox * l, int key)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Calculates the item displayed at screen row 'y' (y==0 being the widget's 1st row). */
+/* Selects from base the pos element */
 static int
-listbox_y_pos (WListbox * l, int y)
+listbox_select_pos (WListbox * l, int base, int pos)
 {
-    return MIN (l->top + y, LISTBOX_LAST (l));
+    int last = 0;
+
+    base += pos;
+
+    if (!listbox_is_empty (l))
+        last = g_queue_get_length (l->list) - 1;
+
+    base = min (base, last);
+
+    return base;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-listbox_fwd (WListbox * l, gboolean wrap)
+listbox_fwd (WListbox * l)
 {
-    if ((guint) l->pos + 1 < g_queue_get_length (l->list))
-        listbox_select_entry (l, l->pos + 1);
-    else if (wrap)
+    if ((guint) l->pos + 1 >= g_queue_get_length (l->list))
         listbox_select_first (l);
+    else
+        listbox_select_entry (l, l->pos + 1);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-listbox_fwd_n (WListbox * l, int n)
+listbox_back (WListbox * l)
 {
-    listbox_select_entry (l, MIN (l->pos + n, LISTBOX_LAST (l)));
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void
-listbox_back (WListbox * l, gboolean wrap)
-{
-    if (l->pos > 0)
-        listbox_select_entry (l, l->pos - 1);
-    else if (wrap)
+    if (l->pos <= 0)
         listbox_select_last (l);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void
-listbox_back_n (WListbox * l, int n)
-{
-    listbox_select_entry (l, MAX (l->pos - n, 0));
+    else
+        listbox_select_entry (l, l->pos - 1);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-listbox_execute_cmd (WListbox * l, long command)
+listbox_execute_cmd (WListbox * l, unsigned long command)
 {
     cb_ret_t ret = MSG_HANDLED;
+    int i;
     Widget *w = WIDGET (l);
+    int length;
 
     if (l->list == NULL || g_queue_is_empty (l->list))
         return MSG_NOT_HANDLED;
@@ -276,10 +266,10 @@ listbox_execute_cmd (WListbox * l, long command)
     switch (command)
     {
     case CK_Up:
-        listbox_back (l, TRUE);
+        listbox_back (l);
         break;
     case CK_Down:
-        listbox_fwd (l, TRUE);
+        listbox_fwd (l);
         break;
     case CK_Top:
         listbox_select_first (l);
@@ -288,16 +278,18 @@ listbox_execute_cmd (WListbox * l, long command)
         listbox_select_last (l);
         break;
     case CK_PageUp:
-        listbox_back_n (l, w->lines - 1);
+        for (i = 0; (i < w->lines - 1) && (l->pos > 0); i++)
+            listbox_back (l);
         break;
     case CK_PageDown:
-        listbox_fwd_n (l, w->lines - 1);
+        length = g_queue_get_length (l->list);
+        for (i = 0; i < w->lines - 1 && l->pos < length - 1; i++)
+            listbox_fwd (l);
         break;
     case CK_Delete:
         if (l->deletable)
         {
             gboolean is_last, is_more;
-            int length;
 
             length = g_queue_get_length (l->list);
 
@@ -330,7 +322,7 @@ listbox_execute_cmd (WListbox * l, long command)
 static cb_ret_t
 listbox_key (WListbox * l, int key)
 {
-    long command;
+    unsigned long command;
 
     if (l->list == NULL)
         return MSG_NOT_HANDLED;
@@ -338,7 +330,13 @@ listbox_key (WListbox * l, int key)
     /* focus on listbox item N by '0'..'9' keys */
     if (key >= '0' && key <= '9')
     {
+        int oldpos = l->pos;
         listbox_select_entry (l, key - '0');
+
+        /* need scroll to item? */
+        if (abs (oldpos - l->pos) > WIDGET (l)->lines)
+            l->top = l->pos;
+
         return MSG_HANDLED;
     }
 
@@ -385,47 +383,6 @@ listbox_append_item (WListbox * l, WLEntry * e, listbox_append_t pos)
 
 /* --------------------------------------------------------------------------------------------- */
 
-/* Call this whenever the user changes the selected item. */
-static void
-listbox_on_change (WListbox * l)
-{
-    listbox_draw (l, TRUE);
-    send_message (WIDGET (l)->owner, l, MSG_NOTIFY, l->pos, NULL);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void
-listbox_do_action (WListbox * l)
-{
-    int action;
-
-    if (l->callback != NULL)
-        action = l->callback (l);
-    else
-        action = LISTBOX_DONE;
-
-    if (action == LISTBOX_DONE)
-    {
-        WDialog *h = WIDGET (l)->owner;
-
-        h->ret_value = B_ENTER;
-        dlg_stop (h);
-    }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void
-listbox_run_hotkey (WListbox * l, int pos)
-{
-    listbox_select_entry (l, pos);
-    listbox_on_change (l);
-    listbox_do_action (l);
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
 static inline void
 listbox_destroy (WListbox * l)
 {
@@ -438,6 +395,7 @@ static cb_ret_t
 listbox_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
     WListbox *l = LISTBOX (w);
+    WDialog *h = w->owner;
     cb_ret_t ret_code;
 
     switch (msg)
@@ -447,13 +405,25 @@ listbox_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 
     case MSG_HOTKEY:
         {
-            int pos;
+            int pos, action;
 
             pos = listbox_check_hotkey (l, parm);
             if (pos < 0)
                 return MSG_NOT_HANDLED;
 
-            listbox_run_hotkey (l, pos);
+            listbox_select_entry (l, pos);
+            send_message (h, w, MSG_ACTION, l->pos, NULL);
+
+            if (l->callback != NULL)
+                action = l->callback (l);
+            else
+                action = LISTBOX_DONE;
+
+            if (action == LISTBOX_DONE)
+            {
+                h->ret_value = B_ENTER;
+                dlg_stop (h);
+            }
 
             return MSG_HANDLED;
         }
@@ -461,7 +431,10 @@ listbox_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
     case MSG_KEY:
         ret_code = listbox_key (l, parm);
         if (ret_code != MSG_NOT_HANDLED)
-            listbox_on_change (l);
+        {
+            listbox_draw (l, TRUE);
+            send_message (h, w, MSG_ACTION, l->pos, NULL);
+        }
         return ret_code;
 
     case MSG_ACTION:
@@ -469,14 +442,13 @@ listbox_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 
     case MSG_CURSOR:
         widget_move (l, l->cursor_y, 0);
+        send_message (h, w, MSG_ACTION, l->pos, NULL);
         return MSG_HANDLED;
 
     case MSG_FOCUS:
     case MSG_UNFOCUS:
-        l->focused = msg == MSG_FOCUS;
-        /* fall through */
     case MSG_DRAW:
-        listbox_draw (l, l->focused);
+        listbox_draw (l, msg != MSG_UNFOCUS);
         return MSG_HANDLED;
 
     case MSG_DESTROY:
@@ -493,47 +465,77 @@ listbox_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
-listbox_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
+static int
+listbox_event (Gpm_Event * event, void *data)
 {
-    WListbox *l = LISTBOX (w);
-    int old_pos;
+    WListbox *l = LISTBOX (data);
+    Widget *w = WIDGET (data);
 
-    old_pos = l->pos;
+    if (!mouse_global_in_widget (event, w))
+        return MOU_UNHANDLED;
 
-    switch (msg)
-    {
-    case MSG_MOUSE_DOWN:
+    /* Single click */
+    if ((event->type & GPM_DOWN) != 0)
         dlg_select_widget (l);
-        listbox_select_entry (l, listbox_y_pos (l, event->y));
-        break;
 
-    case MSG_MOUSE_SCROLL_UP:
-        listbox_back (l, FALSE);
-        break;
+    if (listbox_is_empty (l))
+        return MOU_NORMAL;
 
-    case MSG_MOUSE_SCROLL_DOWN:
-        listbox_fwd (l, FALSE);
-        break;
+    if ((event->type & (GPM_DOWN | GPM_DRAG)) != 0)
+    {
+        int ret = MOU_REPEAT;
+        Gpm_Event local;
+        int i;
 
-    case MSG_MOUSE_DRAG:
-        event->result.repeat = TRUE;    /* It'd be functional even without this. */
-        listbox_select_entry (l, listbox_y_pos (l, event->y));
-        break;
+        local = mouse_get_local (event, w);
+        if (local.y < 1)
+            for (i = -local.y; i >= 0; i--)
+                listbox_back (l);
+        else if (local.y > w->lines)
+            for (i = local.y - w->lines; i > 0; i--)
+                listbox_fwd (l);
+        else if ((local.buttons & GPM_B_UP) != 0)
+        {
+            listbox_back (l);
+            ret = MOU_NORMAL;
+        }
+        else if ((local.buttons & GPM_B_DOWN) != 0)
+        {
+            listbox_fwd (l);
+            ret = MOU_NORMAL;
+        }
+        else
+            listbox_select_entry (l, listbox_select_pos (l, l->top, local.y - 1));
 
-    case MSG_MOUSE_CLICK:
-        /* We don't call listbox_select_entry() here: MSG_MOUSE_DOWN/DRAG did this already. */
-        if (event->count == GPM_DOUBLE) /* Double click */
-            listbox_do_action (l);
-        break;
-
-    default:
-        break;
+        /* We need to refresh ourselves since the dialog manager doesn't */
+        /* know about this event */
+        listbox_draw (l, TRUE);
+        return ret;
     }
 
-    /* If the selection has changed, we redraw the widget and notify the dialog. */
-    if (l->pos != old_pos)
-        listbox_on_change (l);
+    /* Double click */
+    if ((event->type & (GPM_DOUBLE | GPM_UP)) == (GPM_UP | GPM_DOUBLE))
+    {
+        Gpm_Event local;
+        int action;
+
+        local = mouse_get_local (event, w);
+        dlg_select_widget (l);
+        listbox_select_entry (l, listbox_select_pos (l, l->top, local.y - 1));
+
+        if (l->callback != NULL)
+            action = l->callback (l);
+        else
+            action = LISTBOX_DONE;
+
+        if (action == LISTBOX_DONE)
+        {
+            w->owner->ret_value = B_ENTER;
+            dlg_stop (w->owner);
+        }
+    }
+
+    return MOU_NORMAL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -551,7 +553,7 @@ listbox_new (int y, int x, int height, int width, gboolean deletable, lcback_fn 
 
     l = g_new (WListbox, 1);
     w = WIDGET (l);
-    widget_init (w, y, x, height, width, listbox_callback, listbox_mouse_callback);
+    widget_init (w, y, x, height, width, listbox_callback, listbox_event);
 
     l->list = NULL;
     l->top = l->pos = 0;
@@ -559,7 +561,6 @@ listbox_new (int y, int x, int height, int width, gboolean deletable, lcback_fn 
     l->callback = callback;
     l->allow_duplicates = TRUE;
     l->scrollbar = !mc_global.tty.slow_terminal;
-    l->focused = FALSE;
     widget_want_hotkey (w, TRUE);
     widget_want_cursor (w, FALSE);
 
@@ -769,8 +770,7 @@ listbox_remove_list (WListbox * l)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-listbox_add_item (WListbox * l, listbox_append_t pos, int hotkey, const char *text, void *data,
-                  gboolean free_data)
+listbox_add_item (WListbox * l, listbox_append_t pos, int hotkey, const char *text, void *data)
 {
     WLEntry *entry;
 
@@ -783,7 +783,6 @@ listbox_add_item (WListbox * l, listbox_append_t pos, int hotkey, const char *te
     entry = g_new (WLEntry, 1);
     entry->text = g_strdup (text);
     entry->data = data;
-    entry->free_data = free_data;
     entry->hotkey = hotkey;
 
     listbox_append_item (l, entry, pos);

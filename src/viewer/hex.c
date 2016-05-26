@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Function for hex view
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -36,6 +36,7 @@
 #include <config.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>           /* uintmax_t */
 
 #include "lib/global.h"
@@ -81,7 +82,7 @@ static const char hex_char[] = "0123456789ABCDEF";
  */
 
 static mark_t
-mcview_hex_calculate_boldflag (WView * view, off_t from, struct hexedit_change_node *curr,
+mcview_hex_calculate_boldflag (mcview_t * view, off_t from, struct hexedit_change_node *curr,
                                gboolean force_changed)
 {
     return (from == view->hex_cursor) ? MARK_CURSOR
@@ -94,7 +95,7 @@ mcview_hex_calculate_boldflag (WView * view, off_t from, struct hexedit_change_n
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_display_hex (WView * view)
+mcview_display_hex (mcview_t * view)
 {
     const screen_dimen top = view->data_area.top;
     const screen_dimen left = view->data_area.left;
@@ -376,7 +377,7 @@ mcview_display_hex (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_hexedit_save_changes (WView * view)
+mcview_hexedit_save_changes (mcview_t * view)
 {
     int answer = 0;
 
@@ -439,7 +440,7 @@ mcview_hexedit_save_changes (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_toggle_hexedit_mode (WView * view)
+mcview_toggle_hexedit_mode (mcview_t * view)
 {
     view->hexedit_mode = !view->hexedit_mode;
     view->dpy_bbar_dirty = TRUE;
@@ -449,7 +450,7 @@ mcview_toggle_hexedit_mode (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_hexedit_free_change_list (WView * view)
+mcview_hexedit_free_change_list (mcview_t * view)
 {
     struct hexedit_change_node *curr, *next;
 

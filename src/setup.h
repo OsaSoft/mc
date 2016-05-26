@@ -48,7 +48,6 @@ typedef struct
     gboolean navigate_with_arrows;      /* If TRUE: l&r arrows are used to chdir if the input line is empty */
     gboolean scroll_pages;      /* If TRUE, panel is scrolled by half the display when the cursor reaches
                                    the end or the beginning of the panel */
-    gboolean scroll_center;     /* If TRUE, scroll when the cursor hits the middle of the panel */
     gboolean mouse_move_pages;  /* Scroll page/item using mouse wheel */
     gboolean filetype_mode;     /* If TRUE then add per file type hilighting */
     gboolean permission_mode;   /* If TRUE, we use permission hilighting */
@@ -59,7 +58,7 @@ typedef struct
 
 typedef struct macro_action_t
 {
-    long action;
+    unsigned long action;
     int ch;
 } macro_action_t;
 
@@ -127,7 +126,6 @@ extern int quit;
 /* Set to TRUE to suppress printing the last directory */
 extern gboolean print_last_revert;
 
-#ifdef USE_INTERNAL_EDIT
 /* index to record_macro_buf[], -1 if not recording a macro */
 extern int macro_index;
 
@@ -135,9 +133,6 @@ extern int macro_index;
 extern struct macro_action_t record_macro_buf[MAX_MACRO_LENGTH];
 
 extern GArray *macros_list;
-#endif /* USE_INTERNAL_EDIT */
-
-extern int saving_setup;
 
 /*** declarations of public functions ************************************************************/
 
@@ -145,7 +140,10 @@ const char *setup_init (void);
 void load_setup (void);
 gboolean save_setup (gboolean save_options, gboolean save_panel_options);
 void done_setup (void);
+void save_config (void);
 void setup_save_config_show_error (const char *filename, GError ** mcerror);
+
+void save_layout (void);
 
 void load_key_defs (void);
 #ifdef ENABLE_VFS_FTP
@@ -157,6 +155,9 @@ void free_keymap_defs (void);
 
 void panel_load_setup (WPanel * panel, const char *section);
 void panel_save_setup (WPanel * panel, const char *section);
+
+void panels_load_options (void);
+void panels_save_options (void);
 
 /*** inline functions ****************************************************************************/
 

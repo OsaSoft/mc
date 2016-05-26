@@ -90,8 +90,7 @@ as an alias to the appropriate shell script.
 .I \-s, \-\-slow
 Set alternative mode drawing of frameworks.
 If the section [Lines] is not filled, the symbol for the pseudographics
-frame is a space, otherwise the frame characters are taken from following
-parameters.
+frame is a space, otherwise the frame characters are taken from follow params.
 
 .B You can redefine the following variables:
 .TP
@@ -827,8 +826,8 @@ and
 The full directory view shows the file name, the size of the file and
 the modification time.
 .PP
-The brief view shows only the file name and it has from 1 up to 9 columns
-(therefore showing more files unlike other views). The long view
+The brief view shows only the file name and it has two columns
+(therefore showing twice as many files as other views). The long view
 is similar to the output of
 .B "ls \-l"
 command. The long view takes the whole screen width.
@@ -1414,15 +1413,7 @@ directory tree
 .\"Directory Tree"
 figure.
 .PP
-The "File name" input field contains a filename pattern to be searched
-for. It is interpreted as a shell pattern or as a regular expression
-depending on the state of the "Using shell patterns" checkbox. An empty
-value is valid and matches any file name.
-.PP
-The "Content" input field contains a string to search for within the
-files. Leave this field empty to disable searching file contents.
-.PP
-Option "Whole words" allows select only those files containing matches that
+Option \"Whole words\" allows select only those files containing matches that
 form whole words. Like grep \-w.
 .PP
 You can start the search by pressing the OK button.
@@ -1439,8 +1430,8 @@ file. The Again button will ask for the parameters for a new
 search. The Quit button quits the search operation. The Panelize
 button will place the found files to the current directory panel so
 that you can do additional operations on them (view, copy, move,
-delete and so on). To return to the normal file listing, change directory
-to "..".
+delete and so on). After panelizing you can press C\-r to return to the
+normal file listing.
 .PP
 The 'Enable ignore directories' checkbox and input field below it
 allow to set up the list of directories that should be skip during the search
@@ -2096,12 +2087,6 @@ If set (the default), panel will scroll by half the display when the
 cursor reaches the end or the beginning of the panel, otherwise it
 will just scroll a file at a time.
 .PP
-.I Center scrolling.
-If set, panel will scroll when the cursor reaches the middle of the
-panel column, only hitting the top or bottom of the panel when actually on
-the first or last file. This behavior applies when scrolling one file
-at a time, and does not apply to the page up/down keys.
-.PP
 .I Mouse page scrolling.
 Controls whenever scrolling with the mouse wheel is done by pages or
 line by line on the panels.
@@ -2141,8 +2126,8 @@ You can specify how the
 .\"LINK2"
 Quick search
 .\"Quick search"
-mode should work: case insensitively, case sensitively or be matched
-to the panel sort order: case sensitive or not.
+mode should works: case insensitively, case sensitively or be matched
+to the the panel sort order: case sensitive or not.
 .\"NODE "    Confirmation"
 .SH "    Confirmation"
 In this dialog you configure the confirmation options for file deletion,
@@ -2476,9 +2461,9 @@ is substituted.
 .\"NODE "  The subshell support"
 .SH "  The subshell support"
 The subshell support is a compile time option, that works with the
-shells: bash, ash (BusyBox and Debian), tcsh, zsh and fish.
+shells: bash, tcsh and zsh.
 .PP
-When the subshell support is active, Midnight Commander will
+When the subshell code is activated the Midnight Commander will
 spawn a concurrent copy of your shell (the one defined in the
 .B SHELL
 variable and if it is not defined, then the one in the /etc/passwd
@@ -2488,41 +2473,28 @@ subshell as if you had typed it.  This also allows you to change the
 environment variables, use shell functions and define aliases that are
 valid until you quit the Midnight Commander.
 .PP
+If you are using
 .B bash
-users may specify startup commands in ~/.local/share/mc/bashrc (fallback ~/.bashrc)
-and special keyboard maps in ~/.local/share/mc/inputrc (fallback ~/.inputrc).
+you can specify startup
+commands for the subshell in your ~/.local/share/mc/bashrc file and
+special keyboard maps in the ~/.local/share/mc/inputrc file.
+.B tcsh
+users may specify startup commands in the ~/.local/share/mc/tcshrc file.
 .PP
-.B ash/dash
-users (BusyBox or Debian) may specify startup commands in ~/.local/share/mc/ashrc (fallback ~/.profile).
-.PP
-.B tcsh, zsh, fish
-users cannot specify mc-specific startup commands at present. They have to rely on
-shell-specific startup files.
-.PP
-The following paragraphs are relevant only when the subshell support is
-active:
-.PP
-You can suspend applications at any
+When the subshell code is used, you can suspend applications at any
 time with the sequence C\-o and jump back to the Midnight Commander, if
 you interrupt an application, you will not be able to run other
 external commands until you quit the application you interrupted.
 .PP
-The basic prompt displayed by Midnight Commander is of the form
-"user@host:current_path$ ". When using a capable shell, like Bash, the
-prompt displayed by Midnight Commander will be the same prompt that you
-are currently using in your shell.
-.PP
-(There's a known problem when using fish: the prompt is displayed only in
-full screen mode (Ctrl-o), not when the panels are visible.)
+An extra added feature of using the subshell is that the prompt
+displayed by the Midnight Commander is the same prompt that you are
+currently using in your shell.
 .PP
 The
 .\"LINK2"
 OPTIONS
 .\"OPTIONS"
-section has more information on how you can control subshell usage (-U/-u).
-Furthermore, to set a specific subshell different from your current SHELL variable or
-login shell defined in /etc/passwd, you may call MC like this:
-.B SHELL=/bin/myshell mc
+section has more information on how you can control the subshell code.
 .\"NODE "Chmod"
 .SH "Chmod"
 The Chmod window is used to change the attribute bits in a group of
@@ -3769,7 +3741,7 @@ color of input lines used in query dialogs
 .I inputmark
 color of input selected text
 .TP
-.I inputunchanged
+.I inputunhanged
 color of input text before first modification or cursor movement
 .TP
 .I commandlinemark
@@ -4018,7 +3990,7 @@ list of extensions of files. Separated by ';' sign.
 .TP
 .I extensions_case
 (make sense only with 'extensions' parameter) make 'extensions'
-rule case sensitive (true) or not (false).
+rule case sentitive (true) or not (false).
 .PP
 `type' key may have values:
 .nf
@@ -4140,7 +4112,7 @@ utility like 'xclip' to read text into X selection from file.
 For example:
 .PP
 .nf
-clipboard_store=xclip \-i
+clipboard_store=/usr/bin/xclip \-i
 .fi
 .TP
 .I clipboard_paste
@@ -4149,7 +4121,7 @@ utility like 'xclip' to print the selection to standard out.
 For example:
 .PP
 .nf
-clipboard_paste=xclip \-o
+clipboard_paste=/usr/bin/xclip \-o
 .fi
 .TP
 .I autodetect_codeset

@@ -1,21 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Slava Zanko <slavazanko@gmail.com>, 2011
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-03-04 09:25+0300\n"
-"PO-Revision-Date: 2016-03-06 21:29+0000\n"
+"POT-Creation-Date: 2015-02-26 09:43+0300\n"
+"PO-Revision-Date: 2014-09-04 10:10+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: Walloon (http://www.transifex.com/mc/mc/language/wa/)\n"
+"Language-Team: Walloon (http://www.transifex.com/projects/p/mc/language/"
+"wa/)\n"
+"Language: wa\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: wa\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -429,14 +430,17 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr ""
 
+#, fuzzy
 msgid "Cannot create pipe descriptor"
-msgstr ""
+msgstr "Dji n' sai candjî di ridant"
 
+#, fuzzy
 msgid "Cannot parse command for pipe"
-msgstr ""
+msgstr "Dji n' sai enonder li cmande."
 
+#, fuzzy
 msgid "Cannot create pipe streams"
-msgstr ""
+msgstr "Dji n' sai drovî li lomêye bûze %s\n"
 
 #, c-format
 msgid ""
@@ -466,12 +470,7 @@ msgstr ""
 msgid "Directory cache expired for %s"
 msgstr ""
 
-#, c-format
-msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
-msgstr ""
-
-#, c-format
-msgid "%s: %s: %s %lld bytes transferred"
+msgid "bytes transferred"
 msgstr ""
 
 msgid "Starting linear transfer..."
@@ -555,7 +554,7 @@ msgid "Error"
 msgstr "Aroke"
 
 #, c-format
-msgid "%s (%d)"
+msgid "%d: %s"
 msgstr ""
 
 msgid "&Abort"
@@ -706,7 +705,7 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr ""
 
-msgid "Two files are required to envoke the diffviewer."
+msgid "Two files are required to evoke the diffviewer."
 msgstr ""
 
 msgid "Background protocol error"
@@ -1495,7 +1494,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2015 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1854,17 +1853,14 @@ msgstr ""
 msgid "&Full file list"
 msgstr "Djîvêye e&tire des fitchîs"
 
-msgid "&Brief file list:"
-msgstr ""
+msgid "&Brief file list"
+msgstr "&Coûte djîvêye des fitchîs"
 
 msgid "&Long file list"
 msgstr "&Longue djîvêye des fitchîs"
 
 msgid "&User defined:"
 msgstr "A vosse &Môde:"
-
-msgid "columns"
-msgstr ""
 
 msgid "User &mini status"
 msgstr ""
@@ -1881,8 +1877,7 @@ msgstr "Å&rvier"
 msgid "Sort order"
 msgstr "Ôrde po relire"
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
-#. prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
 msgid "Confirmation|&Delete"
 msgstr ""
 
@@ -2184,10 +2179,6 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "'%s' is not a symbolic link"
-msgstr ""
-
-#, c-format
 msgid "Symlink '%s' points to:"
 msgstr ""
 
@@ -2200,6 +2191,10 @@ msgstr ""
 
 #, c-format
 msgid "edit symlink: %s"
+msgstr ""
+
+#, c-format
+msgid "'%s' is not a symbolic link"
 msgstr ""
 
 msgid "FTP to machine"
@@ -2473,7 +2468,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file \"%s\"\n"
+"Cannot read source file\"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2886,31 +2881,31 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr ""
 
 #, c-format
-msgid "Type:       %s"
+msgid "Type:      %s"
 msgstr ""
 
 msgid "non-local vfs"
 msgstr "vfs nén locå"
 
 #, c-format
-msgid "Device:     %s"
-msgstr ""
+msgid "Device:    %s"
+msgstr "Éndjin:    %s"
 
 #, c-format
 msgid "Filesystem: %s"
 msgstr "Sistinme di fitchîs: %s"
 
 #, c-format
-msgid "Accessed:   %s"
-msgstr ""
+msgid "Accessed:  %s"
+msgstr "Eployî:  %s"
 
 #, c-format
-msgid "Modified:   %s"
-msgstr ""
+msgid "Modified:  %s"
+msgstr "Candjî:  %s"
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:    %s"
+msgid "Changed:   %s"
 msgstr ""
 
 #, c-format
@@ -2918,8 +2913,8 @@ msgid "Dev. type: major %lu, minor %lu"
 msgstr ""
 
 #, c-format
-msgid "Size:       %s"
-msgstr ""
+msgid "Size:      %s"
+msgstr "Grandeu: %s"
 
 #, c-format
 msgid " (%ld block)"
@@ -2928,20 +2923,20 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "Owner:      %s/%s"
-msgstr ""
+msgid "Owner:     %s/%s"
+msgstr "Da:     %s/%s"
 
 #, c-format
-msgid "Links:      %d"
-msgstr ""
+msgid "Links:     %d"
+msgstr "Loyéns:     %d"
 
 #, c-format
-msgid "Mode:       %s (%04o)"
-msgstr ""
+msgid "Mode:      %s (%04o)"
+msgstr "Môde:      %s (%04o)"
 
 #, c-format
-msgid "Location:   %Xh:%Xh"
-msgstr ""
+msgid "Location:  %Xh:%Xh"
+msgstr "Eplaeçmint:  %Xh:%Xh"
 
 msgid "&Equal split"
 msgstr "Pårti e deus bokets les &minmes"
@@ -3382,7 +3377,9 @@ msgstr "Trover les programes SUID eyet SGID"
 msgid ""
 "Cannot open the %s file for writing:\n"
 "%s\n"
-msgstr "Dji n' sai drovî li fitchî %s po scrire divins:\n%s\n"
+msgstr ""
+"Dji n' sai drovî li fitchî %s po scrire divins:\n"
+"%s\n"
 
 #, c-format
 msgid "Copy \"%s\" directory to:"
@@ -3421,7 +3418,9 @@ msgstr ""
 msgid ""
 "Cannot write to the %s file:\n"
 "%s\n"
-msgstr "Dji n' sai scrire e fitchî %s :\n%s\n"
+msgstr ""
+"Dji n' sai scrire e fitchî %s :\n"
+"%s\n"
 
 msgid "Debug"
 msgstr ""
@@ -3445,7 +3444,10 @@ msgstr ""
 msgid ""
 "File %s is not owned by root or you or is world writable.\n"
 "Using it may compromise your security"
-msgstr "Li fitchî %s n' est ni da vosse ni da root. Tot l' monde pout bén scrire divins.\nDo côp, si vos vos e siervoz, ça pôreut esse dandjureu..."
+msgstr ""
+"Li fitchî %s n' est ni da vosse ni da root. Tot l' monde pout bén scrire "
+"divins.\n"
+"Do côp, si vos vos e siervoz, ça pôreut esse dandjureu..."
 
 msgid "Format error on file Extensions File"
 msgstr ""
@@ -3500,7 +3502,16 @@ msgid ""
 "\n"
 "If you want to escape, press a single Escape key\n"
 "and wait as well."
-msgstr "Tchôkîz so %s\net s'  rawårdez djusk' a tant ki li messaedje eva.\n\nAdon, tchôkîz co on côp sol minme tape po vey s' i gn a on 'I Va' k' aparexhe\ndjusse asto do boton.\n\nSi vos voloz spiter foû, tchôkîz on côp so Escape\net ratindoz eto."
+msgstr ""
+"Tchôkîz so %s\n"
+"et s'  rawårdez djusk' a tant ki li messaedje eva.\n"
+"\n"
+"Adon, tchôkîz co on côp sol minme tape po vey s' i gn a on 'I Va' k' "
+"aparexhe\n"
+"djusse asto do boton.\n"
+"\n"
+"Si vos voloz spiter foû, tchôkîz on côp so Escape\n"
+"et ratindoz eto."
 
 msgid "Cannot accept this key"
 msgstr ""
@@ -3516,7 +3527,9 @@ msgstr "I Va"
 msgid ""
 "It seems that all your keys already\n"
 "work fine. That's great."
-msgstr "Dj' a l' idêye ki totes vos tapes rotèt ddja \na môde di djin. Clapant, edon?"
+msgstr ""
+"Dj' a l' idêye ki totes vos tapes rotèt ddja \n"
+"a môde di djin. Clapant, edon?"
 
 msgid "&Discard"
 msgstr "&Taper la hatch et match"
@@ -3524,7 +3537,9 @@ msgstr "&Taper la hatch et match"
 msgid ""
 "Great! You have a complete terminal database!\n"
 "All your keys work well."
-msgstr "Clapant! Li båze di dnêyes po vosse terminå est pår fwaite!\nTotes vos tapes rotèt a l' idêye."
+msgstr ""
+"Clapant! Li båze di dnêyes po vosse terminå est pår fwaite!\n"
+"Totes vos tapes rotèt a l' idêye."
 
 msgid ""
 "Press all the keys mentioned here. After you have done it, check\n"
@@ -3659,7 +3674,9 @@ msgstr ""
 msgid ""
 "Cannot open cpio archive\n"
 "%s"
-msgstr "Dji n' sai drovî li fitchî cpio\n%s"
+msgstr ""
+"Dji n' sai drovî li fitchî cpio\n"
+"%s"
 
 #, c-format
 msgid ""
@@ -3919,7 +3936,8 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-msgid "sftp: Failure establishing SSH session"
+#, c-format
+msgid "sftp: Failure establishing SSH session: (%d)"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"

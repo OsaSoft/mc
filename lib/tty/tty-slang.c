@@ -2,7 +2,7 @@
    Interface to the terminal controlling library.
    Slang wrapper.
 
-   Copyright (C) 2005-2016
+   Copyright (C) 2005-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -57,10 +57,7 @@
 
 /*** global variables ****************************************************************************/
 
-/* If true program softkeys (HP terminals only) on startup and after every
-   command ran in the subshell to the description found in the termcap/terminfo
-   database */
-int reset_hp_softkeys = 0;
+extern int reset_hp_softkeys;
 
 /*** file scope macro definitions ****************************************************************/
 
@@ -179,7 +176,7 @@ slang_reset_softkeys (void)
         char *send;
 
         g_snprintf (tmp, sizeof (tmp), "k%d", key);
-        send = SLtt_tgetstr (tmp);
+        send = (char *) SLtt_tgetstr (tmp);
         if (send != NULL)
         {
             g_snprintf (tmp, sizeof (tmp), ESC_STR "&f%dk%dd%dL%s%s", key,
@@ -196,7 +193,7 @@ do_define_key (int code, const char *strcap)
 {
     char *seq;
 
-    seq = SLtt_tgetstr ((SLFUTURE_CONST char *) strcap);
+    seq = (char *) SLtt_tgetstr ((char *) strcap);
     if (seq != NULL)
         define_sequence (code, seq, MCKEY_NOACTION);
 }
@@ -331,8 +328,8 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
     SLsmg_init_smg ();
     if (!mouse_enable)
         use_mouse_p = MOUSE_DISABLED;
-    tty_init_xterm_support (is_xterm);  /* do it before tty_enter_ca_mode() call */
-    tty_enter_ca_mode ();
+    tty_init_xterm_support (is_xterm);  /* do it before do_enter_ca_mode() call */
+    do_enter_ca_mode ();
     tty_keypad (TRUE);
     tty_nodelay (FALSE);
 
@@ -352,34 +349,18 @@ tty_shutdown (void)
     tty_noraw_mode ();
     tty_keypad (FALSE);
     tty_reset_screen ();
-    tty_exit_ca_mode ();
+    do_exit_ca_mode ();
     SLang_reset_tty ();
 
     /* Load the op capability to reset the colors to those that were 
      * active when the program was started up 
      */
-    op_cap = SLtt_tgetstr ((SLFUTURE_CONST char *) "op");
+    op_cap = SLtt_tgetstr ((char *) "op");
     if (op_cap != NULL)
     {
         fputs (op_cap, stdout);
         fflush (stdout);
     }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-tty_enter_ca_mode (void)
-{
-    /* S-Lang handles alternate screen switching and cursor position saving */
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-tty_exit_ca_mode (void)
-{
-    /* S-Lang handles alternate screen switching and cursor position restoring */
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -453,7 +434,7 @@ tty_keypad (gboolean set)
 {
     char *keypad_string;
 
-    keypad_string = SLtt_tgetstr ((SLFUTURE_CONST char *) (set ? "ks" : "ke"));
+    keypad_string = (char *) SLtt_tgetstr ((char *) (set ? "ks" : "ke"));
     if (keypad_string != NULL)
         SLtt_write_string (keypad_string);
     if (set && reset_hp_softkeys)
@@ -748,7 +729,7 @@ tty_printf (const char *fmt, ...)
 char *
 tty_tgetstr (const char *cap)
 {
-    return SLtt_tgetstr ((SLFUTURE_CONST char *) cap);
+    return SLtt_tgetstr ((char *) cap);
 }
 
 /* --------------------------------------------------------------------------------------------- */

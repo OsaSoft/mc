@@ -10,7 +10,7 @@
    Janne Kukonlehto added much error recovery to them for being used
    in an interactive program.
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -52,9 +52,10 @@
 
 #include <config.h>
 
-#if ((defined STAT_STATVFS || defined STAT_STATVFS64)                                       \
-     && (defined HAVE_STRUCT_STATVFS_F_BASETYPE || defined HAVE_STRUCT_STATVFS_F_FSTYPENAME \
-         || (! defined HAVE_STRUCT_STATFS_F_FSTYPENAME)))
+/* Keep this conditional in sync with the similar conditional in m4.include/mc-get-fs-info. */
+#if ((STAT_STATVFS || STAT_STATVFS64)                                       \
+     && (HAVE_STRUCT_STATVFS_F_BASETYPE || HAVE_STRUCT_STATVFS_F_FSTYPENAME \
+         || (! HAVE_STRUCT_STATFS_F_FSTYPENAME)))
 #define USE_STATVFS 1
 #else
 #define USE_STATVFS 0
@@ -69,27 +70,27 @@
 
 #if USE_STATVFS
 #include <sys/statvfs.h>
-#elif defined HAVE_SYS_VFS_H
+#elif HAVE_SYS_VFS_H
 #include <sys/vfs.h>
-#elif defined HAVE_SYS_MOUNT_H && defined HAVE_SYS_PARAM_H
+#elif HAVE_SYS_MOUNT_H && HAVE_SYS_PARAM_H
 /* NOTE: freebsd5.0 needs sys/param.h and sys/mount.h for statfs.
    It does have statvfs.h, but shouldn't use it, since it doesn't
    HAVE_STRUCT_STATVFS_F_BASETYPE.  So find a clean way to fix it.  */
 /* NetBSD 1.5.2 needs these, for the declaration of struct statfs. */
 #include <sys/param.h>
 #include <sys/mount.h>
-#if defined HAVE_NFS_NFS_CLNT_H && defined HAVE_NFS_VFS_H
+#if HAVE_NFS_NFS_CLNT_H && HAVE_NFS_VFS_H
 /* Ultrix 4.4 needs these for the declaration of struct statfs.  */
 #include <netinet/in.h>
 #include <nfs/nfs_clnt.h>
 #include <nfs/vfs.h>
 #endif
-#elif defined HAVE_OS_H         /* BeOS */
+#elif HAVE_OS_H                 /* BeOS */
 #include <fs_info.h>
 #endif
 
 #if USE_STATVFS
-#if ! defined STAT_STATVFS && defined STAT_STATVFS64
+#if ! STAT_STATVFS && STAT_STATVFS64
 #define STRUCT_STATVFS struct statvfs64
 #define STATFS statvfs64
 #else
@@ -106,7 +107,7 @@
 #else
 #define STATFS statfs
 #define STRUCT_STATVFS struct statfs
-#ifdef HAVE_OS_H                /* BeOS */
+#if HAVE_OS_H                   /* BeOS */
 /* BeOS has a statvfs function, but it does not return sensible values
    for f_files, f_ffree and f_favail, and lacks f_type, f_basetype and
    f_fstypename.  Use 'struct fs_info' instead.  */
@@ -133,12 +134,12 @@ statfs (char const *filename, struct fs_info *buf)
 #endif
 #endif
 
-#ifdef HAVE_STRUCT_STATVFS_F_BASETYPE
+#if HAVE_STRUCT_STATVFS_F_BASETYPE
 #define STATXFS_FILE_SYSTEM_TYPE_MEMBER_NAME f_basetype
 #else
-#if defined HAVE_STRUCT_STATVFS_F_FSTYPENAME || defined HAVE_STRUCT_STATFS_F_FSTYPENAME
+#if HAVE_STRUCT_STATVFS_F_FSTYPENAME || HAVE_STRUCT_STATFS_F_FSTYPENAME
 #define STATXFS_FILE_SYSTEM_TYPE_MEMBER_NAME f_fstypename
-#elif defined HAVE_OS_H         /* BeOS */
+#elif HAVE_OS_H                 /* BeOS */
 #define STATXFS_FILE_SYSTEM_TYPE_MEMBER_NAME fsh_name
 #endif
 #endif
@@ -243,7 +244,7 @@ typedef struct
 
 /*** file scope variables ************************************************************************/
 
-static struct
+struct
 {
     Widget *w;
     FileProgressStatus action;
@@ -269,7 +270,7 @@ static struct
    preceding entries in /proc/mounts; that makes df hang if even one
    of the corresponding file systems is hard-mounted but not available.  */
 
-#if USE_STATVFS && ! (! defined STAT_STATVFS && defined STAT_STATVFS64)
+#if USE_STATVFS && ! (! STAT_STATVFS && STAT_STATVFS64)
 static int
 statvfs_works (void)
 {
@@ -343,9 +344,9 @@ static void
 file_frmt_time (char *buffer, double eta_secs)
 {
     int eta_hours, eta_mins, eta_s;
-    eta_hours = (int) (eta_secs / (60 * 60));
-    eta_mins = (int) ((eta_secs - (eta_hours * 60 * 60)) / 60);
-    eta_s = (int) (eta_secs - (eta_hours * 60 * 60 + eta_mins * 60));
+    eta_hours = eta_secs / (60 * 60);
+    eta_mins = (eta_secs - (eta_hours * 60 * 60)) / 60;
+    eta_s = eta_secs - (eta_hours * 60 * 60 + eta_mins * 60);
     g_snprintf (buffer, BUF_TINY, _("%d:%02d.%02d"), eta_hours, eta_mins, eta_s);
 }
 
@@ -500,7 +501,7 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
          * longest of "Overwrite..." labels
          * (assume "Target date..." are short enough)
          */
-        l1 = MAX (widgets_len[9], widgets_len[4]);
+        l1 = max (widgets_len[9], widgets_len[4]);
 
         /* longest of button rows */
         l = l2 = 0;
@@ -511,17 +512,17 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
                 if (row != rd_widgets[i].ypos)
                 {
                     row = rd_widgets[i].ypos;
-                    l2 = MAX (l2, l);
+                    l2 = max (l2, l);
                     l = 0;
                 }
                 l += widgets_len[i] + 4;
             }
 
-        l2 = MAX (l2, l);       /* last row */
-        rd_xlen = MAX (rd_xlen, l1 + l2 + 8);
-        /* rd_xlen = MAX (rd_xlen, str_term_width1 (title) + 2); */
+        l2 = max (l2, l);       /* last row */
+        rd_xlen = max (rd_xlen, l1 + l2 + 8);
+        /* rd_xlen = max (rd_xlen, str_term_width1 (title) + 2); */
         stripped_name_len = str_term_width1 (stripped_name);
-        rd_xlen = MAX (rd_xlen, MIN (COLS, stripped_name_len + 8));
+        rd_xlen = max (rd_xlen, min (COLS, stripped_name_len + 8));
 
         /* Now place widgets */
         l1 += 5;                /* start of first button in the row */
@@ -557,12 +558,12 @@ overwrite_query_dialog (file_op_context_t * ctx, enum OperationMode mode)
     size_trunc_len (fsize_buffer, sizeof (fsize_buffer), ui->s_stat->st_size, 0,
                     panels_options.kilobyte_si);
     ADD_RD_LABEL (2, file_date (ui->s_stat->st_mtime), fsize_buffer, y++);
-    rd_xlen = MAX (rd_xlen, label2->cols + 8);
+    rd_xlen = max (rd_xlen, label2->cols + 8);
     /* destination date and size */
     size_trunc_len (fsize_buffer, sizeof (fsize_buffer), ui->d_stat->st_size, 0,
                     panels_options.kilobyte_si);
     ADD_RD_LABEL (3, file_date (ui->d_stat->st_mtime), fsize_buffer, y++);
-    rd_xlen = MAX (rd_xlen, label2->cols + 8);
+    rd_xlen = max (rd_xlen, label2->cols + 8);
 
     add_widget (ui->replace_dlg, hline_new (y++, -1, -1));
 
@@ -844,11 +845,11 @@ file_op_context_create_ui (file_op_context_t * ctx, gboolean with_eta,
     add_widget (ui->op_dlg, progress_buttons[3].w);
 
     buttons_width = 2 +
-        progress_buttons[0].len + MAX (progress_buttons[1].len, progress_buttons[2].len) +
+        progress_buttons[0].len + max (progress_buttons[1].len, progress_buttons[2].len) +
         progress_buttons[3].len;
 
     /* adjust dialog sizes  */
-    dlg_set_size (ui->op_dlg, y + 3, MAX (COLS * 2 / 3, buttons_width + 6));
+    dlg_set_size (ui->op_dlg, y + 3, max (COLS * 2 / 3, buttons_width + 6));
 
     place_progress_buttons (ui->op_dlg, FALSE);
 
@@ -909,18 +910,18 @@ file_progress_show (file_op_context_t * ctx, off_t done, off_t total,
 
         file_eta_prepare_for_show (buffer2, ctx->eta_secs, FALSE);
         if (ctx->bps == 0)
-            g_snprintf (buffer, sizeof (buffer), "%s %s", buffer2, stalled_msg);
+            g_snprintf (buffer, BUF_TINY, "%s %s", buffer2, stalled_msg);
         else
         {
             char buffer3[BUF_TINY];
 
             file_bps_prepare_for_show (buffer3, ctx->bps);
-            g_snprintf (buffer, sizeof (buffer), "%s (%s) %s", buffer2, buffer3, stalled_msg);
+            g_snprintf (buffer, BUF_TINY, "%s (%s) %s", buffer2, buffer3, stalled_msg);
         }
     }
     else
     {
-        g_snprintf (buffer, sizeof (buffer), "%s", stalled_msg);
+        g_snprintf (buffer, BUF_TINY, "%s", stalled_msg);
     }
 
     label_set_text (ui->progress_file_label, buffer);
@@ -942,9 +943,9 @@ file_progress_show_count (file_op_context_t * ctx, size_t done, size_t total)
         return;
 
     if (ctx->progress_totals_computed)
-        g_snprintf (buffer, sizeof (buffer), _("Files processed: %zu/%zu"), done, total);
+        g_snprintf (buffer, BUF_TINY, _("Files processed: %zu/%zu"), done, total);
     else
-        g_snprintf (buffer, sizeof (buffer), _("Files processed: %zu"), done);
+        g_snprintf (buffer, BUF_TINY, _("Files processed: %zu"), done);
     label_set_text (ui->total_files_processed_label, buffer);
 }
 
@@ -991,23 +992,22 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
         {
             file_eta_prepare_for_show (buffer3, tctx->eta_secs, TRUE);
             if (tctx->bps == 0)
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s %s"), buffer2, buffer3);
+                g_snprintf (buffer, BUF_TINY, _("Time: %s %s"), buffer2, buffer3);
             else
             {
 
                 file_bps_prepare_for_show (buffer4, (long) tctx->bps);
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s %s (%s)"), buffer2, buffer3,
-                            buffer4);
+                g_snprintf (buffer, BUF_TINY, _("Time: %s %s (%s)"), buffer2, buffer3, buffer4);
             }
         }
         else
         {
             if (tctx->bps == 0)
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s"), buffer2);
+                g_snprintf (buffer, BUF_TINY, _("Time: %s"), buffer2);
             else
             {
                 file_bps_prepare_for_show (buffer4, (long) tctx->bps);
-                g_snprintf (buffer, sizeof (buffer), _("Time: %s (%s)"), buffer2, buffer4);
+                g_snprintf (buffer, BUF_TINY, _("Time: %s (%s)"), buffer2, buffer4);
             }
         }
 
@@ -1018,11 +1018,11 @@ file_progress_show_total (file_op_total_context_t * tctx, file_op_context_t * ct
     {
         size_trunc_len (buffer2, 5, tctx->copied_bytes, 0, panels_options.kilobyte_si);
         if (!ctx->progress_totals_computed)
-            g_snprintf (buffer, sizeof (buffer), _(" Total: %s "), buffer2);
+            g_snprintf (buffer, BUF_TINY, _(" Total: %s "), buffer2);
         else
         {
             size_trunc_len (buffer3, 5, ctx->progress_bytes, 0, panels_options.kilobyte_si);
-            g_snprintf (buffer, sizeof (buffer), _(" Total: %s/%s "), buffer2, buffer3);
+            g_snprintf (buffer, BUF_TINY, _(" Total: %s/%s "), buffer2, buffer3);
         }
 
         hline_set_text (ui->total_bytes_label, buffer);
@@ -1209,7 +1209,7 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
         if (format_len + text_len <= max_len)
         {
             fmd_xlen = format_len + text_len + 6;
-            fmd_xlen = MAX (fmd_xlen, 68);
+            fmd_xlen = max (fmd_xlen, 68);
         }
         else
         {
@@ -1222,7 +1222,7 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
     else
     {
         fmd_xlen = COLS * 2 / 3;
-        fmd_xlen = MAX (fmd_xlen, 68);
+        fmd_xlen = max (fmd_xlen, 68);
         g_snprintf (fmd_buf, sizeof (fmd_buf), format, *(const int *) text);
     }
 
@@ -1289,7 +1289,7 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
         }
         else
         {
-            mode_t i2;
+            int i2;
 
             ctx->preserve = ctx->preserve_uidgid = FALSE;
             i2 = umask (0);
@@ -1304,7 +1304,7 @@ file_mask_dialog (file_op_context_t * ctx, FileOperation operation,
             return dest_dir;
         }
 
-        ctx->search_handle = mc_search_new (source_mask, NULL);
+        ctx->search_handle = mc_search_new (source_mask, -1, NULL);
 
         if (ctx->search_handle == NULL)
         {

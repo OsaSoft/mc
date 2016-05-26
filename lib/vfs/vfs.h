@@ -14,6 +14,7 @@
 #include <utime.h>
 #endif
 #include <stdio.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stddef.h>
 
@@ -232,8 +233,7 @@ void vfs_timeout_handler (void);
 int vfs_timeouts (void);
 void vfs_expire (gboolean now);
 
-const char *vfs_get_current_dir (void);
-char *vfs_get_current_dir_n (void);
+char *vfs_get_current_dir (void);
 const vfs_path_t *vfs_get_raw_current_dir (void);
 void vfs_set_raw_current_dir (const vfs_path_t * vpath);
 
@@ -257,15 +257,15 @@ void vfs_release_path (const vfs_path_t * vpath);
 
 void vfs_fill_names (fill_names_f);
 
-/* *INDENT-OFF* */
-void vfs_print_message (const char *msg, ...) G_GNUC_PRINTF (1, 2);
-/* *INDENT-ON* */
+void vfs_print_message (const char *msg, ...) __attribute__ ((format (__printf__, 1, 2)));
 
 int vfs_ferrno (struct vfs_class *vfs);
 
 int vfs_new_handle (struct vfs_class *vclass, void *fsinfo);
 
-struct vfs_class *vfs_class_find_by_handle (int handle, void **fsinfo);
+struct vfs_class *vfs_class_find_by_handle (int handle);
+
+void *vfs_class_data_find_by_handle (int handle);
 
 void vfs_free_handle (int handle);
 

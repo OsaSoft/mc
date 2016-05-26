@@ -1,7 +1,7 @@
 /*
    User interface for syntax selection.
 
-   Copyright (C) 2011-2016
+   Copyright (C) 2011-2015
    Free Software Foundation, Inc.
 
    Copyright (C) 2005, 2006
@@ -61,7 +61,7 @@
 static int
 pstrcmp (const void *p1, const void *p2)
 {
-    return strcmp (*(char *const *) p1, *(char *const *) p2);
+    return strcmp (*(char **) p1, *(char **) p2);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -74,15 +74,15 @@ exec_edit_syntax_dialog (const GPtrArray * names, const char *current_syntax)
 
     syntaxlist = create_listbox_window (LIST_LINES, MAX_ENTRY_LEN,
                                         _("Choose syntax highlighting"), NULL);
-    LISTBOX_APPEND_TEXT (syntaxlist, 'A', _("< Auto >"), NULL, FALSE);
-    LISTBOX_APPEND_TEXT (syntaxlist, 'R', _("< Reload Current Syntax >"), NULL, FALSE);
+    LISTBOX_APPEND_TEXT (syntaxlist, 'A', _("< Auto >"), NULL);
+    LISTBOX_APPEND_TEXT (syntaxlist, 'R', _("< Reload Current Syntax >"), NULL);
 
     for (i = 0; i < names->len; i++)
     {
         const char *name;
 
         name = g_ptr_array_index (names, i);
-        LISTBOX_APPEND_TEXT (syntaxlist, 0, name, NULL, FALSE);
+        LISTBOX_APPEND_TEXT (syntaxlist, 0, name, NULL);
         if (current_syntax != NULL && strcmp (name, current_syntax) == 0)
             listbox_select_entry (syntaxlist->list, i + N_DFLT_ENTRIES);
     }

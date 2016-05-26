@@ -48,8 +48,6 @@ extern gboolean xterm_title;
 extern int free_space;
 extern int nice_rotating_dash;
 
-extern int ok_to_refresh;
-
 extern panels_layout_t panels_layout;
 
 /*** declarations of public functions ************************************************************/
@@ -70,7 +68,7 @@ int get_current_index (void);
 int get_other_index (void);
 const char *get_nth_panel_name (int num);
 
-Widget *get_panel_widget (int idx);
+struct Widget *get_panel_widget (int idx);
 
 WPanel *get_other_panel (void);
 

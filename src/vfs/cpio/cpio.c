@@ -1,7 +1,7 @@
 /*
    Virtual File System: GNU Tar file system.
 
-   Copyright (C) 2000-2016
+   Copyright (C) 2000-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -33,6 +33,7 @@
 #include <config.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -234,9 +235,7 @@ cpio_open_cpio_file (struct vfs_class *me, struct vfs_s_super *super, const vfs_
     arch->deferred = NULL;
 
     type = get_compression_type (fd, super->name);
-    if (type == COMPRESSION_NONE)
-        mc_lseek (fd, 0, SEEK_SET);
-    else
+    if (type != COMPRESSION_NONE)
     {
         char *s;
         vfs_path_t *tmp_vpath;
@@ -469,35 +468,28 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
     }
     else
     {                           /* !entry */
-        /* root == NULL can be in the following case:
-         * a/b/c -> d
-         * where 'a/b' is the stale link and therefore root of 'c' cannot be found in the archive
-         */
-        if (root != NULL)
+        if (inode == NULL)
         {
-            if (inode == NULL)
+            inode = vfs_s_new_inode (me, super, st);
+            if ((st->st_nlink > 0) && ((arch->type == CPIO_NEWC) || (arch->type == CPIO_CRC)))
             {
-                inode = vfs_s_new_inode (me, super, st);
-                if ((st->st_nlink > 0) && ((arch->type == CPIO_NEWC) || (arch->type == CPIO_CRC)))
-                {
-                    /* For case of hardlinked files */
-                    defer_inode *i;
+                /* For case of hardlinked files */
+                defer_inode *i;
 
-                    i = g_new (defer_inode, 1);
-                    i->inumber = st->st_ino;
-                    i->device = st->st_dev;
-                    i->inode = inode;
+                i = g_new (defer_inode, 1);
+                i->inumber = st->st_ino;
+                i->device = st->st_dev;
+                i->inode = inode;
 
-                    arch->deferred = g_slist_prepend (arch->deferred, i);
-                }
+                arch->deferred = g_slist_prepend (arch->deferred, i);
             }
-
-            if (st->st_size != 0)
-                inode->data_offset = CPIO_POS (super);
-
-            entry = vfs_s_new_entry (me, tn, inode);
-            vfs_s_insert_entry (me, root, entry);
         }
+
+        if (st->st_size != 0)
+            inode->data_offset = CPIO_POS (super);
+
+        entry = vfs_s_new_entry (me, tn, inode);
+        vfs_s_insert_entry (me, root, entry);
 
         g_free (name);
 
@@ -505,21 +497,15 @@ cpio_create_entry (struct vfs_class *me, struct vfs_s_super *super, struct stat 
             CPIO_SEEK_CUR (super, st->st_size);
         else
         {
-            if (inode != NULL)
+            inode->linkname = g_malloc (st->st_size + 1);
+
+            if (mc_read (arch->fd, inode->linkname, st->st_size) < st->st_size)
             {
-                /* FIXME: do we must read from arch->fd in case of inode != NULL only or in any case? */
-
-                inode->linkname = g_malloc (st->st_size + 1);
-
-                if (mc_read (arch->fd, inode->linkname, st->st_size) < st->st_size)
-                {
-                    inode->linkname[0] = '\0';
-                    return STATUS_EOF;
-                }
-
-                inode->linkname[st->st_size] = '\0';    /* Linkname stored without terminating \0 !!! */
+                inode->linkname[0] = '\0';
+                return STATUS_EOF;
             }
 
+            inode->linkname[st->st_size] = '\0';        /* Linkname stored without terminating \0 !!! */
             CPIO_POS (super) += st->st_size;
             cpio_skip_padding (super);
         }
@@ -764,8 +750,6 @@ cpio_open_archive (struct vfs_s_super *super, const vfs_path_t * vpath,
         case STATUS_OK:
             continue;
         case STATUS_TRAIL:
-            break;
-        default:
             break;
         }
         break;

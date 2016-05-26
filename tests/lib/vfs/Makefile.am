@@ -1,4 +1,3 @@
-PACKAGE_STRING = "/lib/vfs"
 
 AM_CPPFLAGS = \
 	-DTEST_SHARE_DIR=\"$(abs_srcdir)\" \

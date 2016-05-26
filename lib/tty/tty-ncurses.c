@@ -2,7 +2,7 @@
    Interface to the terminal controlling library.
    Ncurses wrapper.
 
-   Copyright (C) 2005-2016
+   Copyright (C) 2005-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -204,8 +204,8 @@ tty_init (gboolean mouse_enable, gboolean is_xterm)
 
     if (!mouse_enable)
         use_mouse_p = MOUSE_DISABLED;
-    tty_init_xterm_support (is_xterm);  /* do it before tty_enter_ca_mode() call */
-    tty_enter_ca_mode ();
+    tty_init_xterm_support (is_xterm);  /* do it before do_enter_ca_mode() call */
+    do_enter_ca_mode ();
     tty_raw_mode ();
     noecho ();
     keypad (stdscr, TRUE);
@@ -225,31 +225,7 @@ tty_shutdown (void)
     tty_noraw_mode ();
     tty_keypad (FALSE);
     tty_reset_screen ();
-    tty_exit_ca_mode ();
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-tty_enter_ca_mode (void)
-{
-    if (mc_global.tty.xterm_flag && smcup != NULL)
-    {
-        fprintf (stdout, /* ESC_STR ")0" */ ESC_STR "7" ESC_STR "[?47h");
-        fflush (stdout);
-    }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-void
-tty_exit_ca_mode (void)
-{
-    if (mc_global.tty.xterm_flag && rmcup != NULL)
-    {
-        fprintf (stdout, ESC_STR "[?47l" ESC_STR "8" ESC_STR "[m");
-        fflush (stdout);
-    }
+    do_exit_ca_mode ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -631,7 +607,7 @@ tty_print_string (const char *s)
     s = str_term_form (s);
     len = str_term_width1 (s);
 
-    /* line is upper or below the screen or entire line is before or after screen */
+    /* line is upper or below the screen or entire line is before or after scrren */
     if (mc_curs_row < 0 || mc_curs_row >= LINES || mc_curs_col + len <= 0 || mc_curs_col >= COLS)
     {
         mc_curs_col += len;
@@ -673,8 +649,7 @@ char *
 tty_tgetstr (const char *cap)
 {
     char *unused = NULL;
-
-    return tgetstr ((NCURSES_CONST char *) cap, &unused);
+    return tgetstr ((char *) cap, &unused);
 }
 
 /* --------------------------------------------------------------------------------------------- */

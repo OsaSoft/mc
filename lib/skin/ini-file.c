@@ -2,7 +2,7 @@
    Skins engine.
    Reading and parse ini-files
 
-   Copyright (C) 2009-2016
+   Copyright (C) 2009-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -58,16 +58,14 @@ mc_skin_get_list_from_dir (const gchar * base_dir, GPtrArray * list)
 
     if (dir != NULL)
     {
-        const gchar *cname;
-
-        while ((cname = g_dir_read_name (dir)) != NULL)
+        while ((name = (gchar *) g_dir_read_name (dir)) != NULL)
         {
             gchar *sname;
             size_t slen;
             unsigned int i;
 
-            slen = strlen (cname);
-            sname = g_strndup (cname, slen);
+            slen = strlen (name);
+            sname = g_strndup (name, slen);
 
             if (slen > 4 && strcmp (sname + slen - 4, ".ini") == 0)
                 sname[slen - 4] = '\0';
@@ -91,7 +89,10 @@ mc_skin_get_list_from_dir (const gchar * base_dir, GPtrArray * list)
 static int
 string_array_comparator (gconstpointer a, gconstpointer b)
 {
-    return strcmp (*(char *const *) a, *(char *const *) b);
+    char *aa = *(char **) a;
+    char *bb = *(char **) b;
+
+    return strcmp (aa, bb);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -101,7 +102,7 @@ mc_skin_ini_file_load_search_in_dir (mc_skin_t * mc_skin, const gchar * base_dir
 {
     char *file_name, *file_name2;
 
-    file_name = g_build_filename (base_dir, MC_SKINS_SUBDIR, mc_skin->name, (char *) NULL);
+    file_name = g_build_filename (base_dir, MC_SKINS_SUBDIR, mc_skin->name, NULL);
     if (exist_file (file_name))
     {
         mc_skin->config = mc_config_init (file_name, TRUE);
@@ -111,7 +112,7 @@ mc_skin_ini_file_load_search_in_dir (mc_skin_t * mc_skin, const gchar * base_dir
     g_free (file_name);
 
     file_name2 = g_strdup_printf ("%s.ini", mc_skin->name);
-    file_name = g_build_filename (base_dir, MC_SKINS_SUBDIR, file_name2, (char *) NULL);
+    file_name = g_build_filename (base_dir, MC_SKINS_SUBDIR, file_name2, NULL);
     g_free (file_name2);
 
     if (exist_file (file_name))

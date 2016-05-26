@@ -1,7 +1,7 @@
 /*
    File locking
 
-   Copyright (C) 2003-2016
+   Copyright (C) 2003-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -69,11 +69,11 @@
 
 /*** file scope type declarations ****************************************************************/
 
-typedef struct
+struct lock_s
 {
     char *who;
     pid_t pid;
-} lock_s;
+};
 
 /*** file scope variables ************************************************************************/
 
@@ -135,13 +135,13 @@ lock_build_symlink_name (const vfs_path_t * fname_vpath)
  * Extract pid from user@host.domain.pid string
  */
 
-static lock_s *
+static struct lock_s *
 lock_extract_info (const char *str)
 {
     size_t i, len;
     const char *p, *s;
     static char pid[PID_BUF_SIZE], who[BUF_SIZE];
-    static lock_s lock;
+    static struct lock_s lock;
 
     len = strlen (str);
 
@@ -175,10 +175,10 @@ lock_extract_info (const char *str)
  * Extract user@host.domain.pid from lock file (static string)
  */
 
-static const char *
+static char *
 lock_get_info (const char *lockfname)
 {
-    ssize_t cnt;
+    int cnt;
     static char buf[BUF_SIZE];
 
     cnt = readlink (lockfname, buf, BUF_SIZE - 1);
@@ -199,9 +199,9 @@ lock_get_info (const char *lockfname)
 int
 lock_file (const vfs_path_t * fname_vpath)
 {
-    char *lockfname = NULL, *newlock, *msg;
+    char *lockfname = NULL, *newlock, *msg, *lock;
     struct stat statbuf;
-    lock_s *lockinfo;
+    struct lock_s *lockinfo;
     gboolean is_local;
     gboolean symlink_ok = FALSE;
     const char *elpath;
@@ -227,8 +227,6 @@ lock_file (const vfs_path_t * fname_vpath)
 
     if (lstat (lockfname, &statbuf) == 0)
     {
-        const char *lock;
-
         lock = lock_get_info (lockfname);
         if (lock == NULL)
             goto ret;
@@ -250,9 +248,9 @@ lock_file (const vfs_path_t * fname_vpath)
                 break;
             case 1:
             case -1:
-            default:           /* Esc Esc */
                 g_free (msg);
                 goto ret;
+                break;          /* FIXME: unneeded? */
             }
             g_free (msg);
         }
@@ -278,9 +276,9 @@ lock_file (const vfs_path_t * fname_vpath)
 int
 unlock_file (const vfs_path_t * fname_vpath)
 {
-    char *lockfname;
+    char *lockfname, *lock;
     struct stat statbuf;
-    const char *elpath, *lock;
+    const char *elpath;
 
     if (fname_vpath == NULL)
         return 0;

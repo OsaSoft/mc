@@ -14,6 +14,7 @@
 #define MC__EDIT_H
 
 #include "lib/global.h"         /* PATH_SEP_STR */
+#include "lib/fileloc.h"
 #include "lib/vfs/vfs.h"        /* vfs_path_t */
 
 /*** typedefs(not structures) and defined constants **********************************************/
@@ -41,7 +42,6 @@ extern int option_persistent_selections;
 extern int option_drop_selection_on_copy;
 extern int option_cursor_beyond_eol;
 extern gboolean option_cursor_after_inserted_block;
-extern int option_state_full_filename;
 extern int option_line_state;
 extern int option_save_mode;
 extern int option_save_position;
@@ -69,7 +69,7 @@ void edit_stack_free (void);
 gboolean edit_file (const vfs_path_t * file_vpath, long line);
 gboolean edit_files (const GList * files);
 
-const char *edit_get_file_name (const WEdit * edit);
+char *edit_get_file_name (const WEdit * edit);
 long edit_get_curs_col (const WEdit * edit);
 const char *edit_get_syntax_type (const WEdit * edit);
 

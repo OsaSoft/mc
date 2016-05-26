@@ -1,8 +1,10 @@
 #ifndef MC__FILEHIGHLIGHT_H
 #define MC__FILEHIGHLIGHT_H
 
-#include "lib/mcconfig.h"       /* mc_config_t */
-#include "lib/util.h"           /* file_entry_t */
+#include "lib/mcconfig.h"
+#include "lib/search.h"
+
+#include "lib/util.h"
 
 /*** typedefs(not structures) and defined constants **********************************************/
 

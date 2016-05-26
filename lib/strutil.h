@@ -217,9 +217,7 @@ estr_t str_vfs_convert_to (GIConv, const char *, int, GString *);
 
 /* printf function for str_buffer, append result of printf at the end of buffer
  */
-/* *INDENT-OFF* */
-void str_printf (GString * buffer, const char *format, ...) G_GNUC_PRINTF (2, 3);
-/* *INDENT-ON* */
+void str_printf (GString *, const char *, ...);
 
 /* add standard replacement character in terminal encoding
  */

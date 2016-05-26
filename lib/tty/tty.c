@@ -1,7 +1,7 @@
 /*
    Interface to the terminal controlling library.
 
-   Copyright (C) 2005-2016
+   Copyright (C) 2005-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -49,6 +49,11 @@
 #include "win.h"
 
 /*** global variables ****************************************************************************/
+
+/* If true program softkeys (HP terminals only) on startup and after every
+   command ran in the subshell to the description found in the termcap/terminfo
+   database */
+int reset_hp_softkeys = 0;
 
 int mc_tty_frm[MC_TTY_FRM_MAX];
 

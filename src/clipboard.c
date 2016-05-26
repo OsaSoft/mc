@@ -1,7 +1,7 @@
 /*
    Util for external clipboard.
 
-   Copyright (C) 2009-2016
+   Copyright (C) 2009-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <fcntl.h>
 
 #include "lib/global.h"
 #include "lib/fileloc.h"
@@ -85,7 +86,7 @@ clipboard_file_to_ext_clip (const gchar * event_group_name, const gchar * event_
     cmd = g_strconcat (clipboard_store_path, " ", tmp, " 2>/dev/null", (char *) NULL);
 
     if (cmd != NULL)
-        my_system (EXECUTE_AS_SHELL, mc_global.shell->path, cmd);
+        my_system (EXECUTE_AS_SHELL, mc_global.tty.shell, cmd);
 
     g_free (cmd);
     g_free (tmp);
@@ -197,7 +198,7 @@ clipboard_text_to_file (const gchar * event_group_name, const gchar * event_name
     {
         ssize_t ret;
 
-        ret = mc_write (file, text, str_len);
+        ret = mc_write (file, (char *) text, str_len);
         (void) ret;
     }
     mc_close (file);

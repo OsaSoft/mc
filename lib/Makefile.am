@@ -40,8 +40,6 @@ libmc_la_SOURCES = \
 	keybind.c keybind.h \
 	lock.c lock.h \
 	serialize.c serialize.h \
-	shell.c shell.h \
-	stat-size.h \
 	timefmt.c timefmt.h \
 	timer.c timer.h
 
@@ -53,7 +51,7 @@ if CHARSET
 libmc_la_SOURCES += charsets.c charsets.h
 endif
 
-AM_CPPFLAGS = $(GLIB_CFLAGS) -I$(top_srcdir)
+AM_CPPFLAGS = $(GLIB_CFLAGS) -I$(top_srcdir) $(PCRE_CPPFLAGS)
 
 libmc_la_LIBADD = \
 	event/libmcevent.la \
@@ -74,4 +72,4 @@ else
     libmc_la_LIBADD += $(GLIB_LIBS)
 endif
 
-libmc_la_LIBADD += $(PCRE_LIBS) $(LIBICONV) $(LIBINTL)
+libmc_la_LIBADD += $(PCRE_LIBS) $(LIBICONV) $(INTLLIBS)

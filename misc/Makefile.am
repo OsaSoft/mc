@@ -14,14 +14,17 @@ endif
 
 SCRIPTS_IN = \
 	mc.menu.in \
+	mc.menu.sr.in \
 	mcedit.menu.in
 
 SCRIPTS_OUT = \
 	mc.menu \
+	mc.menu.sr \
 	mcedit.menu
 
 LIBFILES_CONST = \
 	filehighlight.ini \
+	mc.keymap \
 	mc.default.keymap \
 	mc.emacs.keymap
 
@@ -51,9 +54,3 @@ EXTRA_DIST = \
 if !CHARSET
 EXTRA_DIST += mc.charsets
 endif
-
-install-data-hook:
-	cd $(DESTDIR)$(cfgdir) && rm -f mc.keymap && $(LN_S) mc.default.keymap mc.keymap
-
-uninstall-hook:
-	cd $(DESTDIR)$(cfgdir) && rm -f mc.keymap

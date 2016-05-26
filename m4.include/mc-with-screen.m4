@@ -5,7 +5,7 @@ dnl
 dnl Select the screen library.
 dnl
 
-AC_DEFUN([mc_WITH_SCREEN], [
+AC_DEFUN([MC_WITH_SCREEN], [
 
     AC_ARG_WITH([screen],
         AS_HELP_STRING([--with-screen=@<:@LIB@:>@],
@@ -13,13 +13,13 @@ AC_DEFUN([mc_WITH_SCREEN], [
 
     case x$with_screen in
     x | xslang)
-        mc_WITH_SLANG
+        MC_WITH_SLANG
         ;;
     xncurses)
-        mc_WITH_NCURSES
+        MC_WITH_NCURSES
         ;;
     xncursesw)
-        mc_WITH_NCURSESW
+        MC_WITH_NCURSESW
         ;;
     *)
         AC_MSG_ERROR([Value of the screen library is incorrect])

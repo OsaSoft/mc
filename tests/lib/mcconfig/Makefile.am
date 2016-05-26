@@ -1,4 +1,3 @@
-PACKAGE_STRING = "/lib/mcconfig"
 
 AM_CPPFLAGS = \
 	-DWORKDIR=\"$(abs_builddir)\" \

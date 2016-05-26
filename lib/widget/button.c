@@ -1,7 +1,7 @@
 /*
    Widgets for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Authors:
@@ -10,7 +10,7 @@
    Jakub Jelinek, 1995
    Andrej Borsenkow, 1996
    Norbert Warmuth, 1997
-   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013, 2016
+   Andrew Borodin <aborodin@vmail.ru>, 2009, 2010, 2013
 
    This file is part of the Midnight Commander.
 
@@ -39,6 +39,7 @@
 #include "lib/global.h"
 
 #include "lib/tty/tty.h"
+#include "lib/tty/mouse.h"
 #include "lib/strutil.h"
 #include "lib/widget.h"
 
@@ -173,25 +174,25 @@ button_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *
 
 /* --------------------------------------------------------------------------------------------- */
 
-static void
-button_mouse_callback (Widget * w, mouse_msg_t msg, mouse_event_t * event)
+static int
+button_event (Gpm_Event * event, void *data)
 {
-    (void) event;
+    Widget *w = WIDGET (data);
 
-    switch (msg)
+    if (!mouse_global_in_widget (event, w))
+        return MOU_UNHANDLED;
+
+    if ((event->type & (GPM_DOWN | GPM_UP)) != 0)
     {
-    case MSG_MOUSE_DOWN:
         dlg_select_widget (w);
-        break;
-
-    case MSG_MOUSE_CLICK:
-        send_message (w, NULL, MSG_KEY, ' ', NULL);
-        send_message (w->owner, w, MSG_POST_KEY, ' ', NULL);
-        break;
-
-    default:
-        break;
+        if ((event->type & GPM_UP) != 0)
+        {
+            send_message (w, NULL, MSG_KEY, ' ', NULL);
+            send_message (w->owner, w, MSG_POST_KEY, ' ', NULL);
+        }
     }
+
+    return MOU_NORMAL;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -210,7 +211,7 @@ button_new (int y, int x, int action, button_flags_t flags, const char *text, bc
     b->action = action;
     b->flags = flags;
     b->text = parse_hotkey (text);
-    widget_init (w, y, x, 1, button_get_len (b), button_callback, button_mouse_callback);
+    widget_init (w, y, x, 1, button_get_len (b), button_callback, button_event);
     b->selected = FALSE;
     b->callback = callback;
     widget_want_hotkey (w, TRUE);
@@ -221,7 +222,7 @@ button_new (int y, int x, int action, button_flags_t flags, const char *text, bc
 
 /* --------------------------------------------------------------------------------------------- */
 
-char *
+const char *
 button_get_text (const WButton * b)
 {
     if (b->text.hotkey != NULL)

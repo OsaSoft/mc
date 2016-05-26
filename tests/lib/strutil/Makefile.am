@@ -1,4 +1,3 @@
-PACKAGE_STRING = "/lib/strutil"
 
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \

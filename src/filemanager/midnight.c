@@ -1,7 +1,7 @@
 /*
    Main dialog (file panels) of the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -39,13 +39,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <pwd.h>                /* for username in xterm title */
 
 #include "lib/global.h"
-#include "lib/fileloc.h"        /* MC_HINT */
 
 #include "lib/tty/tty.h"
 #include "lib/tty/key.h"        /* KEY_M_* masks */
@@ -56,7 +56,7 @@
 
 #include "src/args.h"
 #ifdef ENABLE_SUBSHELL
-#include "src/subshell/subshell.h"
+#include "src/subshell.h"
 #endif
 #include "src/setup.h"          /* variables */
 #include "src/learn.h"          /* learn_keys() */
@@ -88,6 +88,9 @@
 #include "src/consaver/cons.saver.h"    /* show_console_contents */
 
 #include "midnight.h"
+
+/* TODO: merge content of layout.c here */
+extern int ok_to_refresh;
 
 /*** global variables ****************************************************************************/
 
@@ -368,7 +371,10 @@ init_menu (void)
 static void
 menu_last_selected_cmd (void)
 {
-    menubar_activate (the_menubar, drop_menus != 0, -1);
+    the_menubar->is_active = TRUE;
+    the_menubar->is_dropped = (drop_menus != 0);
+    the_menubar->previous_widget = dlg_get_current_widget_id (midnight_dlg);
+    dlg_select_widget (the_menubar);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -376,14 +382,14 @@ menu_last_selected_cmd (void)
 static void
 menu_cmd (void)
 {
-    int selected;
+    if (the_menubar->is_active)
+        return;
 
     if ((get_current_index () == 0) == (current_panel->active != 0))
-        selected = 0;
+        the_menubar->selected = 0;
     else
-        selected = g_list_length (the_menubar->menu) - 1;
-
-    menubar_activate (the_menubar, drop_menus != 0, selected);
+        the_menubar->selected = g_list_length (the_menubar->menu) - 1;
+    menu_last_selected_cmd ();
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -405,7 +411,7 @@ sort_cmd (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static char *
-midnight_get_shortcut (long command)
+midnight_get_shortcut (unsigned long command)
 {
     const char *ext_map;
     const char *shortcut = NULL;
@@ -527,40 +533,41 @@ static gboolean
 print_vfs_message (const gchar * event_group_name, const gchar * event_name,
                    gpointer init_data, gpointer data)
 {
+    char str[128];
     ev_vfs_print_message_t *event_data = (ev_vfs_print_message_t *) data;
 
     (void) event_group_name;
     (void) event_name;
     (void) init_data;
 
+    g_vsnprintf (str, sizeof (str), event_data->msg, event_data->ap);
+
     if (mc_global.midnight_shutdown)
-        goto ret;
+        return TRUE;
 
     if (!mc_global.message_visible || the_hint == NULL || WIDGET (the_hint)->owner == NULL)
     {
         int col, row;
 
         if (!nice_rotating_dash || (ok_to_refresh <= 0))
-            goto ret;
+            return TRUE;
 
         /* Preserve current cursor position */
         tty_getyx (&row, &col);
 
         tty_gotoyx (0, 0);
         tty_setcolor (NORMAL_COLOR);
-        tty_print_string (str_fit_to_term (event_data->msg, COLS - 1, J_LEFT));
+        tty_print_string (str_fit_to_term (str, COLS - 1, J_LEFT));
 
         /* Restore cursor position */
         tty_gotoyx (row, col);
         mc_refresh ();
-        goto ret;
+        return TRUE;
     }
 
     if (mc_global.message_visible)
-        set_hintbar (event_data->msg);
+        set_hintbar (str);
 
-  ret:
-    MC_PTR_FREE (event_data->msg);
     return TRUE;
 }
 
@@ -748,8 +755,8 @@ put_link (WPanel * panel)
         vfs_path_t *vpath;
         int i;
 
-        vpath = vfs_path_append_new (panel->cwd_vpath, selection (panel)->fname, (char *) NULL);
-        i = mc_readlink (vpath, buffer, sizeof (buffer) - 1);
+        vpath = vfs_path_append_new (panel->cwd_vpath, selection (panel)->fname, NULL);
+        i = mc_readlink (vpath, buffer, MC_MAXPATHLEN - 1);
         vfs_path_free (vpath);
 
         if (i > 0)
@@ -783,24 +790,24 @@ put_other_link (void)
 static void
 put_prog_name (void)
 {
-    const char *tmp;
-
+    char *tmp;
     if (!command_prompt)
         return;
 
     if (get_current_type () == view_tree)
     {
         WTree *tree;
-        const vfs_path_t *selected_name;
+        vfs_path_t *selected_name;
 
         tree = (WTree *) get_panel_widget (get_current_index ());
         selected_name = tree_selected_name (tree);
-        tmp = vfs_path_as_str (selected_name);
+        tmp = g_strdup (vfs_path_as_str (selected_name));
     }
     else
-        tmp = selection (current_panel)->fname;
+        tmp = g_strdup (selection (current_panel)->fname);
 
     command_insert (cmdline, tmp, TRUE);
+    g_free (tmp);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -911,12 +918,13 @@ done_mc (void)
      * We sync the profiles since the hotlist may have changed, while
      * we only change the setup data if we have the auto save feature set
      */
-    const char *curr_dir;
+    char *curr_dir;
 
     save_setup (auto_save_setup, panels_options.auto_save_setup);
 
     curr_dir = vfs_get_current_dir ();
     vfs_stamp_path (curr_dir);
+    g_free (curr_dir);
 
     if ((current_panel != NULL) && (get_current_type () == view_listing))
         vfs_stamp_path (vfs_path_as_str (current_panel->cwd_vpath));
@@ -966,7 +974,7 @@ prepend_cwd_on_local (const char *filename)
 
     vfs_path_free (vpath);
 
-    return vfs_path_append_new (vfs_get_raw_current_dir (), filename, (char *) NULL);
+    return vfs_path_append_new (vfs_get_raw_current_dir (), filename, NULL);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1093,7 +1101,7 @@ toggle_show_hidden (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-midnight_execute_cmd (Widget * sender, long command)
+midnight_execute_cmd (Widget * sender, unsigned long command)
 {
     cb_ret_t res = MSG_HANDLED;
 
@@ -1393,7 +1401,7 @@ midnight_execute_cmd (Widget * sender, long command)
 static cb_ret_t
 midnight_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *data)
 {
-    long command;
+    unsigned long command;
 
     switch (msg)
     {
@@ -1403,7 +1411,7 @@ midnight_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
         return MSG_HANDLED;
 
     case MSG_DRAW:
-        load_hint (TRUE);
+        load_hint (1);
         /* We handle the special case of the output lines */
         if (mc_global.tty.console_flag != '\0' && output_lines)
             show_console_contents (output_start_y,
@@ -1563,8 +1571,20 @@ midnight_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
         return MSG_HANDLED;
 
     case MSG_ACTION:
-        /* Handle shortcuts, menu, and buttonbar. */
-        return midnight_execute_cmd (sender, parm);
+        /* shortcut */
+        if (sender == NULL)
+            return midnight_execute_cmd (NULL, parm);
+        /* message from menu */
+        if (sender == WIDGET (the_menubar))
+            return midnight_execute_cmd (sender, parm);
+        /* message from buttonbar */
+        if (sender == WIDGET (the_bar))
+        {
+            if (data != NULL)
+                return send_message (data, NULL, MSG_ACTION, parm, NULL);
+            return midnight_execute_cmd (sender, parm);
+        }
+        return MSG_NOT_HANDLED;
 
     case MSG_END:
         panel_deinit ();
@@ -1573,6 +1593,42 @@ midnight_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void
     default:
         return dlg_default_callback (w, sender, msg, parm, data);
     }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+
+static int
+midnight_event (Gpm_Event * event, void *data)
+{
+    Widget *wh = WIDGET (data);
+    int ret = MOU_UNHANDLED;
+
+    if (event->y == wh->y + 1)
+    {
+        /* menubar */
+        if (menubar_visible || the_menubar->is_active)
+            ret = WIDGET (the_menubar)->mouse (event, the_menubar);
+        else
+        {
+            Widget *w;
+
+            w = get_panel_widget (0);
+            if (w->mouse != NULL)
+                ret = w->mouse (event, w);
+
+            if (ret == MOU_UNHANDLED)
+            {
+                w = get_panel_widget (1);
+                if (w->mouse != NULL)
+                    ret = w->mouse (event, w);
+            }
+
+            if (ret == MOU_UNHANDLED)
+                ret = WIDGET (the_menubar)->mouse (event, the_menubar);
+        }
+    }
+
+    return ret;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1604,75 +1660,6 @@ midnight_set_buttonbar (WButtonBar * b)
     buttonbar_set_label (b, 9, Q_ ("ButtonBar|PullDn"), main_map, NULL);
     buttonbar_set_label (b, 10, Q_ ("ButtonBar|Quit"), main_map, NULL);
 }
-
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Return a random hint.  If force is TRUE, ignore the timeout.
- */
-
-char *
-get_random_hint (gboolean force)
-{
-    static const guint64 update_period = 60 * G_USEC_PER_SEC;
-    static guint64 tv = 0;
-
-    char *data, *result = NULL, *eop;
-    size_t len, start;
-    GIConv conv;
-
-    /* Do not change hints more often than one minute */
-    if (!force && !mc_time_elapsed (&tv, update_period))
-        return g_strdup ("");
-
-    data = load_mc_home_file (mc_global.share_data_dir, MC_HINT, NULL, &len);
-    if (data == NULL)
-        return NULL;
-
-    /* get a random entry */
-    srand ((unsigned int) (tv / G_USEC_PER_SEC));
-    start = ((size_t) rand ()) % (len - 1);
-
-    /* Search the start of paragraph */
-    for (; start != 0; start--)
-        if (data[start] == '\n' && data[start + 1] == '\n')
-        {
-            start += 2;
-            break;
-        }
-
-    /* Search the end of paragraph */
-    for (eop = data + start; *eop != '\0'; eop++)
-    {
-        if (*eop == '\n' && *(eop + 1) == '\n')
-        {
-            *eop = '\0';
-            break;
-        }
-        if (*eop == '\n')
-            *eop = ' ';
-    }
-
-    /* hint files are stored in utf-8 */
-    /* try convert hint file from utf-8 to terminal encoding */
-    conv = str_crt_conv_from ("UTF-8");
-    if (conv != INVALID_CONV)
-    {
-        GString *buffer;
-
-        buffer = g_string_sized_new (len - start);
-        if (str_convert (conv, &data[start], buffer) != ESTR_FAILURE)
-            result = g_string_free (buffer, FALSE);
-        else
-            g_string_free (buffer, TRUE);
-        str_close_conv (conv);
-    }
-    else
-        result = g_strndup (data + start, len - start);
-
-    g_free (data);
-    return result;
-}
-
 
 /* --------------------------------------------------------------------------------------------- */
 /**
@@ -1757,8 +1744,8 @@ do_nc (void)
     edit_stack_init ();
 #endif
 
-    midnight_dlg = dlg_create (FALSE, 0, 0, LINES, COLS, dialog_colors, midnight_callback, NULL,
-                               "[main]", NULL, DLG_NONE);
+    midnight_dlg = dlg_create (FALSE, 0, 0, LINES, COLS, dialog_colors, midnight_callback,
+                               midnight_event, "[main]", NULL, DLG_NONE);
 
     /* Check if we were invoked as an editor or file viewer */
     if (mc_global.mc_run_mode != MC_RUN_FULL)

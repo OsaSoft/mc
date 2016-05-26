@@ -1,7 +1,7 @@
 /*
    Virtual File System: External file system.
 
-   Copyright (C) 1995-2016
+   Copyright (C) 1995-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -47,6 +47,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <sys/wait.h>
 
@@ -65,6 +66,8 @@
 #include "extfs.h"
 
 /*** global variables ****************************************************************************/
+
+GArray *extfs_plugins = NULL;
 
 /*** file scope macro definitions ****************************************************************/
 
@@ -132,8 +135,6 @@ typedef struct
 } extfs_plugin_info_t;
 
 /*** file scope variables ************************************************************************/
-
-static GArray *extfs_plugins = NULL;
 
 static gboolean errloop;
 static gboolean notadir;
@@ -246,7 +247,7 @@ extfs_find_entry_int (struct entry *dir, const char *name, GSList * list,
     if (g_path_is_absolute (name))
     {
         /* Handle absolute paths */
-        name = g_path_skip_root (name);
+        name = (char *) g_path_skip_root (name);
         dir = dir->inode->archive->root_entry;
     }
 
@@ -255,7 +256,7 @@ extfs_find_entry_int (struct entry *dir, const char *name, GSList * list,
     name_end = name + strlen (name);
 
     q = strchr (p, PATH_SEP);
-    if (q == NULL)
+    if (q == '\0')
         q = strchr (p, '\0');
 
     while ((pent != NULL) && (c != '\0') && (*p != '\0'))
@@ -308,11 +309,9 @@ extfs_find_entry_int (struct entry *dir, const char *name, GSList * list,
         }
         /* Next iteration */
         *q = c;
-        if (c == '\0')
-            break;
         p = q + 1;
         q = strchr (p, PATH_SEP);
-        if (q == NULL)
+        if (q == '\0')
             q = strchr (p, '\0');
     }
     if (pent == NULL)
@@ -850,7 +849,7 @@ extfs_cmd (const char *str_extfs_cmd, struct archive *archive,
     g_free (quoted_archive_name);
 
     open_error_pipe ();
-    retval = my_system (EXECUTE_AS_SHELL, mc_global.shell->path, cmd);
+    retval = my_system (EXECUTE_AS_SHELL, mc_global.tty.shell, cmd);
     g_free (cmd);
     close_error_pipe (D_ERROR, NULL);
     return retval;
@@ -1063,6 +1062,7 @@ extfs_readdir (void *data)
 
     g_strlcpy (dir.dent.d_name, (*info)->name, MC_MAXPATHLEN);
 
+    compute_namelen (&dir.dent);
     *info = (*info)->next_in_dir;
 
     return (void *) &dir;

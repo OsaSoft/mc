@@ -13,8 +13,8 @@
 
 /*** structures declarations (and typedefs of structures)*****************************************/
 
-struct WView;
-typedef struct WView WView;
+struct mcview_struct;
+typedef struct mcview_struct mcview_t;
 
 /*** global variables defined in .c file *********************************************************/
 
@@ -35,19 +35,18 @@ extern char *mcview_show_eof;
 
 /*** declarations of public functions ************************************************************/
 
-/* Creates a new WView object with the given properties. Caveat: the
+/* Creates a new mcview_t object with the given properties. Caveat: the
  * origin is in y-x order, while the extent is in x-y order. */
-extern WView *mcview_new (int y, int x, int lines, int cols, gboolean is_panel);
+extern mcview_t *mcview_new (int y, int x, int lines, int cols, gboolean is_panel);
 
 
 /* Shows {file} or the output of {command} in the internal viewer,
  * starting in line {start_line}.
  */
-extern gboolean mcview_viewer (const char *command, const vfs_path_t * file_vpath, int start_line,
-                               off_t search_start, off_t search_end);
+extern gboolean mcview_viewer (const char *command, const vfs_path_t * file_vpath, int start_line);
 
-extern gboolean mcview_load (WView * view, const char *command, const char *file, int start_line,
-                             off_t search_start, off_t search_end);
+extern gboolean mcview_load (mcview_t * view, const char *command, const char *file,
+                             int start_line);
 
 /*** inline functions ****************************************************************************/
 #endif /* MC__VIEWER_H */

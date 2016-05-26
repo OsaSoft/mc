@@ -6,7 +6,7 @@
    or, if etags utility not installed:
    $ find . -type f -name "*.[ch]" | ctags --c-kinds=+p --fields=+iaS --extra=+q -e -L-
 
-   Copyright (C) 2009-2016
+   Copyright (C) 2009-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -153,8 +153,6 @@ parse_define (char *buf, char **long_name, char **short_name, long *line)
             *short_name = shortdef;
             *line = atol (linedef);
             return TRUE;
-        default:
-            break;
         }
         buf++;
         c = *buf;
@@ -188,6 +186,7 @@ etags_set_definition_hash (const char *tagfile, const char *start_path,
     char *chekedstr = NULL;
 
     int num = 0;                /* returned value */
+    int pos;
     char *filename = NULL;
 
     if (!match_func || !tagfile)
@@ -209,15 +208,12 @@ etags_set_definition_hash (const char *tagfile, const char *start_path,
             }
             break;
         case in_filename:
-            {
-                size_t pos;
-
-                pos = strcspn (buf, ",");
-                g_free (filename);
-                filename = g_strndup (buf, pos + 1);
-                state = in_define;
-                break;
-            }
+            pos = strcspn (buf, ",");
+            g_free (filename);
+            filename = g_malloc (pos + 2);
+            g_strlcpy (filename, (char *) buf, pos + 1);
+            state = in_define;
+            break;
         case in_define:
             if (buf[0] == 0x0C)
             {
@@ -253,8 +249,6 @@ etags_set_definition_hash (const char *tagfile, const char *start_path,
                     num++;
                 }
             }
-            break;
-        default:
             break;
         }
     }

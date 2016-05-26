@@ -1,4 +1,3 @@
-PACKAGE_STRING = "/lib/widget"
 
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \

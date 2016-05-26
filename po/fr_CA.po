@@ -1,21 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-#
+# 
 # Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: Midnight Commander\n"
 "Report-Msgid-Bugs-To: http://www.midnight-commander.org/\n"
-"POT-Creation-Date: 2016-05-07 18:23+0300\n"
-"PO-Revision-Date: 2015-02-26 09:48+0000\n"
+"POT-Creation-Date: 2014-07-25 10:37+0400\n"
+"PO-Revision-Date: 2014-09-04 10:10+0000\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
-"Language-Team: French (Canada) (http://www.transifex.com/projects/p/mc/"
-"language/fr_CA/)\n"
-"Language: fr_CA\n"
+"Language-Team: French (Canada) (http://www.transifex.com/projects/p/mc/language/fr_CA/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: fr_CA\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 # "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
@@ -332,9 +331,6 @@ msgstr ""
 msgid "Colon"
 msgstr ""
 
-msgid "Semicolon"
-msgstr ""
-
 msgid "Exclamation mark"
 msgstr ""
 
@@ -429,27 +425,6 @@ msgid ""
 "Check the TERM environment variable.\n"
 msgstr ""
 
-msgid "Cannot create pipe descriptor"
-msgstr ""
-
-msgid "Cannot parse command for pipe"
-msgstr ""
-
-msgid "Cannot create pipe streams"
-msgstr ""
-
-#, c-format
-msgid ""
-"Unexpected error in select() reading data from a child process:\n"
-"%s"
-msgstr ""
-
-#, c-format
-msgid ""
-"Unexpected error in waitpid():\n"
-"%s"
-msgstr ""
-
 msgid "Warning"
 msgstr ""
 
@@ -466,12 +441,7 @@ msgstr ""
 msgid "Directory cache expired for %s"
 msgstr ""
 
-#, c-format
-msgid "%s: %s: %s %3d%% (%lld) bytes transferred"
-msgstr ""
-
-#, c-format
-msgid "%s: %s: %s %lld bytes transferred"
+msgid "bytes transferred"
 msgstr ""
 
 msgid "Starting linear transfer..."
@@ -555,7 +525,7 @@ msgid "Error"
 msgstr ""
 
 #, c-format
-msgid "%s (%d)"
+msgid "%d: %s"
 msgstr ""
 
 msgid "&Abort"
@@ -669,7 +639,7 @@ msgid ""
 "   color16 to color255, or rgb000 to rgb555 and gray0 to gray23\n"
 "\n"
 "Attributes:\n"
-"   bold, italic, underline, reverse, blink; append more with '+'\n"
+"   bold, underline, reverse, blink; append more with '+'\n"
 msgstr ""
 
 msgid "Color options"
@@ -706,13 +676,7 @@ msgstr ""
 msgid "No arguments given to the viewer."
 msgstr ""
 
-msgid "Two files are required to envoke the diffviewer."
-msgstr ""
-
-msgid "Background protocol error"
-msgstr ""
-
-msgid "Reading failed"
+msgid "Two files are required to evoke the diffviewer."
 msgstr ""
 
 msgid "Background process error"
@@ -722,6 +686,12 @@ msgid "Unknown error in child"
 msgstr ""
 
 msgid "Child died unexpectedly"
+msgstr ""
+
+msgid "Background protocol error"
+msgstr ""
+
+msgid "Reading failed"
 msgstr ""
 
 msgid ""
@@ -1495,7 +1465,7 @@ msgid ""
 "written for the Midnight Commander."
 msgstr ""
 
-msgid "Copyright (C) 1996-2016 the Free Software Foundation"
+msgid "Copyright (C) 1996-2014 the Free Software Foundation"
 msgstr ""
 
 msgid "About"
@@ -1682,12 +1652,6 @@ msgid ""
 "%s"
 msgstr ""
 
-msgid "< Default >"
-msgstr ""
-
-msgid "Skins"
-msgstr ""
-
 msgid "Other 8 bit"
 msgstr ""
 
@@ -1772,6 +1736,12 @@ msgstr ""
 msgid "Configure options"
 msgstr ""
 
+msgid "< Default >"
+msgstr ""
+
+msgid "Skins"
+msgstr ""
+
 msgid "Skin:"
 msgstr ""
 
@@ -1823,9 +1793,6 @@ msgstr ""
 msgid "Pa&ge scrolling"
 msgstr ""
 
-msgid "Center &scrolling"
-msgstr ""
-
 msgid "&Mouse page scrolling"
 msgstr ""
 
@@ -1857,16 +1824,13 @@ msgstr ""
 msgid "&Full file list"
 msgstr ""
 
-msgid "&Brief file list:"
+msgid "&Brief file list"
 msgstr ""
 
 msgid "&Long file list"
 msgstr ""
 
 msgid "&User defined:"
-msgstr ""
-
-msgid "columns"
 msgstr ""
 
 msgid "User &mini status"
@@ -1884,7 +1848,8 @@ msgstr ""
 msgid "Sort order"
 msgstr ""
 
-#. TRANSLATORS: no need to translate 'Confirmation', it's just a context prefix
+#. TRANSLATORS: no need to translate 'Confirmation', it's just a context
+#. prefix
 msgid "Confirmation|&Delete"
 msgstr ""
 
@@ -2186,10 +2151,6 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "'%s' is not a symbolic link"
-msgstr ""
-
-#, c-format
 msgid "Symlink '%s' points to:"
 msgstr ""
 
@@ -2202,6 +2163,10 @@ msgstr ""
 
 #, c-format
 msgid "edit symlink: %s"
+msgstr ""
+
+#, c-format
+msgid "'%s' is not a symbolic link"
 msgstr ""
 
 msgid "FTP to machine"
@@ -2475,7 +2440,7 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Cannot read source file \"%s\"\n"
+"Cannot read source file\"%s\"\n"
 "%s"
 msgstr ""
 
@@ -2888,14 +2853,14 @@ msgid "Free space: %s/%s (%d%%)"
 msgstr ""
 
 #, c-format
-msgid "Type:       %s"
+msgid "Type:      %s"
 msgstr ""
 
 msgid "non-local vfs"
 msgstr ""
 
 #, c-format
-msgid "Device:     %s"
+msgid "Device:    %s"
 msgstr ""
 
 #, c-format
@@ -2903,16 +2868,16 @@ msgid "Filesystem: %s"
 msgstr ""
 
 #, c-format
-msgid "Accessed:   %s"
+msgid "Accessed:  %s"
 msgstr ""
 
 #, c-format
-msgid "Modified:   %s"
+msgid "Modified:  %s"
 msgstr ""
 
 #. TRANSLATORS: Time of last status change as in stat(2) man.
 #, c-format
-msgid "Changed:    %s"
+msgid "Changed:   %s"
 msgstr ""
 
 #, c-format
@@ -2920,7 +2885,7 @@ msgid "Dev. type: major %lu, minor %lu"
 msgstr ""
 
 #, c-format
-msgid "Size:       %s"
+msgid "Size:      %s"
 msgstr ""
 
 #, c-format
@@ -2930,19 +2895,19 @@ msgstr[0] ""
 msgstr[1] ""
 
 #, c-format
-msgid "Owner:      %s/%s"
+msgid "Owner:     %s/%s"
 msgstr ""
 
 #, c-format
-msgid "Links:      %d"
+msgid "Links:     %d"
 msgstr ""
 
 #, c-format
-msgid "Mode:       %s (%04o)"
+msgid "Mode:      %s (%04o)"
 msgstr ""
 
 #, c-format
-msgid "Location:   %Xh:%Xh"
+msgid "Location:  %Xh:%Xh"
 msgstr ""
 
 msgid "&Equal split"
@@ -3461,6 +3426,12 @@ msgid "The %%var macro has no variable"
 msgstr ""
 
 #, c-format
+msgid ""
+"Cannot open file%s\n"
+"%s"
+msgstr ""
+
+#, c-format
 msgid "No suitable entries found in %s"
 msgstr ""
 
@@ -3892,6 +3863,9 @@ msgstr ""
 msgid "sftp: Invalid host name."
 msgstr ""
 
+msgid "sftp: Invalid port value."
+msgstr ""
+
 #, c-format
 msgid "sftp: %s"
 msgstr ""
@@ -3921,7 +3895,8 @@ msgstr ""
 msgid "sftp: Password is empty."
 msgstr ""
 
-msgid "sftp: Failure establishing SSH session"
+#, c-format
+msgid "sftp: Failure establishing SSH session: (%d)"
 msgstr ""
 
 msgid "sftp: No file handler data present for reading file"
@@ -4063,6 +4038,12 @@ msgid ""
 "Save modified file?"
 msgstr ""
 
+msgid "Cannot spawn child process"
+msgstr ""
+
+msgid "Empty output from child filter"
+msgstr ""
+
 msgid "&Line number"
 msgstr ""
 
@@ -4106,12 +4087,6 @@ msgid "ButtonBar|Unform"
 msgstr ""
 
 msgid "ButtonBar|Format"
-msgstr ""
-
-#, c-format
-msgid ""
-"Failed to read data from child stdout:\n"
-"%s"
 msgstr ""
 
 #, c-format

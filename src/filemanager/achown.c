@@ -1,7 +1,7 @@
 /*
    Chown-advanced command -- for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -74,14 +74,12 @@
 
 /*** file scope variables ************************************************************************/
 
-static WDialog *ch_dlg;
+static struct WDialog *ch_dlg;
 
 static struct
 {
     unsigned long id;
-    int ret_cmd;
-    button_flags_t flags;
-    int x, len;
+    int ret_cmd, flags, x, len;
     const char *text;
 } chown_advanced_but[BUTTONS] =
 {
@@ -305,8 +303,6 @@ chl_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void *dat
                 h->ret_value = parm;
                 dlg_stop (h);
             }
-        default:
-            break;
         }
 
     default:
@@ -345,14 +341,13 @@ do_enter_key (WDialog * h, int f_pos)
 
         /* get new listboxes */
         chl_list = listbox_new (1, 1, 11, 15, FALSE, NULL);
-        listbox_add_item (chl_list, LISTBOX_APPEND_AT_END, 0, "<Unknown>", NULL, FALSE);
+        listbox_add_item (chl_list, LISTBOX_APPEND_AT_END, 0, "<Unknown>", NULL);
         if (is_owner)
         {
             /* get and put user names in the listbox */
             setpwent ();
             while ((chl_pass = getpwent ()) != NULL)
-                listbox_add_item (chl_list, LISTBOX_APPEND_SORTED, 0, chl_pass->pw_name, NULL,
-                                  FALSE);
+                listbox_add_item (chl_list, LISTBOX_APPEND_SORTED, 0, chl_pass->pw_name, NULL);
             endpwent ();
             fe = listbox_search_text (chl_list, get_owner (sf_stat->st_uid));
         }
@@ -361,8 +356,7 @@ do_enter_key (WDialog * h, int f_pos)
             /* get and put group names in the listbox */
             setgrent ();
             while ((chl_grp = getgrent ()) != NULL)
-                listbox_add_item (chl_list, LISTBOX_APPEND_SORTED, 0, chl_grp->gr_name, NULL,
-                                  FALSE);
+                listbox_add_item (chl_list, LISTBOX_APPEND_SORTED, 0, chl_grp->gr_name, NULL);
             endgrent ();
             fe = listbox_search_text (chl_list, get_group (sf_stat->st_gid));
         }
@@ -477,7 +471,7 @@ advanced_chown_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm
     WDialog *h = DIALOG (w);
     int i;
     int f_pos;
-    unsigned long id;
+    unsigned int id;
 
     id = dlg_get_current_widget_id (h);
 
@@ -620,9 +614,6 @@ advanced_chown_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm
                 if (flag_pos > 8 || (flag_pos % 3) == 0)
                     dlg_one_down (h);
             }
-            break;
-
-        default:
             break;
         }
         return MSG_NOT_HANDLED;
@@ -836,7 +827,7 @@ chown_advanced_cmd (void)
     /* Number of files at startup */
     int files_on_begin;
 
-    files_on_begin = MAX (1, current_panel->marked);
+    files_on_begin = max (1, current_panel->marked);
 
     do
     {                           /* do while any files remaining */
@@ -896,7 +887,6 @@ chown_advanced_cmd (void)
             break;
 
         case B_SKIP:
-        default:
             break;
         }
 

@@ -1,7 +1,7 @@
 /*
    Directory hotlist -- for the Midnight Commander
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -290,12 +290,12 @@ fill_listbox (WListbox * list)
                 g_string_truncate (buff, 0);
                 g_string_append (buff, "->");
                 g_string_append (buff, current->label);
-                listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, buff->str, current, FALSE);
+                listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, buff->str, current);
             }
             break;
         case HL_TYPE_DOTDOT:
         case HL_TYPE_ENTRY:
-            listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, current->label, current, FALSE);
+            listbox_add_item (list, LISTBOX_APPEND_AT_END, 0, current->label, current);
         default:
             break;
         }
@@ -328,15 +328,17 @@ unlink_entry (struct hotlist *entry)
 static void
 add_name_to_list (const char *path)
 {
-    listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, path, NULL, FALSE);
+    listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, path, 0);
 }
 #endif /* !ENABLE_VFS */
 
 /* --------------------------------------------------------------------------------------------- */
 
 static int
-hotlist_run_cmd (int action)
+hotlist_button_callback (WButton * button, int action)
 {
+    (void) button;
+
     switch (action)
     {
     case B_MOVE:
@@ -474,8 +476,7 @@ hotlist_run_cmd (int action)
 
     case B_REFRESH_VFS:
         listbox_remove_list (l_hotlist);
-        listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, mc_config_get_home_dir (), NULL,
-                          FALSE);
+        listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, mc_config_get_home_dir (), 0);
         vfs_fill_names (add_name_to_list);
         return 0;
 #endif /* ENABLE_VFS */
@@ -483,19 +484,6 @@ hotlist_run_cmd (int action)
     default:
         return 1;
     }
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static int
-hotlist_button_callback (WButton * button, int action)
-{
-    int ret;
-
-    (void) button;
-    ret = hotlist_run_cmd (action);
-    update_path_name ();
-    return ret;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -576,17 +564,16 @@ hotlist_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, void 
 
     switch (msg)
     {
-    case MSG_INIT:
-    case MSG_NOTIFY:           /* MSG_NOTIFY is fired by the listbox to tell us the item has changed. */
-        update_path_name ();
-        return MSG_HANDLED;
-
     case MSG_UNHANDLED_KEY:
         return hotlist_handle_key (h, parm);
 
     case MSG_POST_KEY:
-        /* always stay on hotlist */
         dlg_select_widget (h == hotlist_dlg ? l_hotlist : l_movelist);
+        /* always stay on hotlist */
+        /* fall through */
+
+    case MSG_INIT:
+        update_path_name ();
         return MSG_HANDLED;
 
     case MSG_RESIZE:
@@ -697,7 +684,7 @@ init_i18n_stuff (int list_type, int cols)
         (len[0])--;
         (len[1])--;
 
-        cols = MAX (cols, MAX (len[0], len[1]));
+        cols = max (cols, max (len[0], len[1]));
 
         /* arrange buttons */
         for (i = 0; i < hotlist_but_num; i++)
@@ -742,7 +729,7 @@ init_hotlist (hotlist_t list_type)
     cols = init_i18n_stuff (list_type, COLS - 6);
 
     hotlist_state.expanded =
-        mc_config_get_int (mc_global.main_config, "HotlistConfig", "expanded_view_of_groups", 0);
+        mc_config_get_int (mc_main_config, "HotlistConfig", "expanded_view_of_groups", 0);
 
 #ifdef ENABLE_VFS
     if (list_type == LIST_VFSLIST)
@@ -775,8 +762,7 @@ init_hotlist (hotlist_t list_type)
 #ifdef ENABLE_VFS
     if (list_type == LIST_VFSLIST)
     {
-        listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, mc_config_get_home_dir (), NULL,
-                          FALSE);
+        listbox_add_item (l_hotlist, LISTBOX_APPEND_AT_END, 0, mc_config_get_home_dir (), 0);
         vfs_fill_names (add_name_to_list);
     }
     else
@@ -870,9 +856,8 @@ hotlist_done (void)
 {
     dlg_destroy (hotlist_dlg);
     l_hotlist = NULL;
-#if 0
-    update_panels (UP_OPTIMIZE, UP_KEEPSEL);
-#endif
+    if (FALSE)
+        update_panels (UP_OPTIMIZE, UP_KEEPSEL);
     repaint_screen ();
 }
 
@@ -962,11 +947,11 @@ add2hotlist (char *label, char *directory, enum HotListType type, listbox_append
             char *lbl;
 
             lbl = g_strconcat ("->", new->label, (char *) NULL);
-            listbox_add_item (l_hotlist, pos, 0, lbl, new, FALSE);
+            listbox_add_item (l_hotlist, pos, 0, lbl, new);
             g_free (lbl);
         }
         else
-            listbox_add_item (l_hotlist, pos, 0, new->label, new, FALSE);
+            listbox_add_item (l_hotlist, pos, 0, new->label, new);
         listbox_select_entry (l_hotlist, l_hotlist->pos);
     }
 
@@ -1179,21 +1164,21 @@ load_group (struct hotlist *grp)
 
     group_section = find_group_section (grp);
 
-    keys = mc_config_get_keys (mc_global.main_config, group_section, NULL);
+    keys = mc_config_get_keys (mc_main_config, group_section, NULL);
 
     current_group = grp;
 
     for (profile_keys = keys; *profile_keys != NULL; profile_keys++)
-        add2hotlist (mc_config_get_string (mc_global.main_config, group_section, *profile_keys, ""),
+        add2hotlist (mc_config_get_string (mc_main_config, group_section, *profile_keys, ""),
                      g_strdup (*profile_keys), HL_TYPE_GROUP, LISTBOX_APPEND_AT_END);
 
     g_free (group_section);
     g_strfreev (keys);
 
-    keys = mc_config_get_keys (mc_global.main_config, grp->directory, NULL);
+    keys = mc_config_get_keys (mc_main_config, grp->directory, NULL);
 
     for (profile_keys = keys; *profile_keys != NULL; profile_keys++)
-        add2hotlist (mc_config_get_string (mc_global.main_config, group_section, *profile_keys, ""),
+        add2hotlist (mc_config_get_string (mc_main_config, group_section, *profile_keys, ""),
                      g_strdup (*profile_keys), HL_TYPE_ENTRY, LISTBOX_APPEND_AT_END);
 
     g_strfreev (keys);
@@ -1404,20 +1389,20 @@ clean_up_hotlist_groups (const char *section)
     char *grp_section;
 
     grp_section = g_strconcat (section, ".Group", (char *) NULL);
-    if (mc_config_has_group (mc_global.main_config, section))
-        mc_config_del_group (mc_global.main_config, section);
+    if (mc_config_has_group (mc_main_config, section))
+        mc_config_del_group (mc_main_config, section);
 
-    if (mc_config_has_group (mc_global.main_config, grp_section))
+    if (mc_config_has_group (mc_main_config, grp_section))
     {
         char **profile_keys, **keys;
 
-        keys = mc_config_get_keys (mc_global.main_config, grp_section, NULL);
+        keys = mc_config_get_keys (mc_main_config, grp_section, NULL);
 
         for (profile_keys = keys; *profile_keys != NULL; profile_keys++)
             clean_up_hotlist_groups (*profile_keys);
 
         g_strfreev (keys);
-        mc_config_del_group (mc_global.main_config, grp_section);
+        mc_config_del_group (mc_main_config, grp_section);
     }
     g_free (grp_section);
 }
@@ -1484,10 +1469,10 @@ load_hotlist (void)
         GError *mcerror = NULL;
 
         clean_up_hotlist_groups ("Hotlist");
-        if (!mc_config_save_file (mc_global.main_config, &mcerror))
-            setup_save_config_show_error (mc_global.main_config->ini_path, &mcerror);
+        if (!mc_config_save_file (mc_main_config, &mcerror))
+            setup_save_config_show_error (mc_main_config->ini_path, &mcerror);
 
-        mc_error_message (&mcerror, NULL);
+        mc_error_message (&mcerror);
     }
 
     stat (hotlist_file_name, &stat_buf);
@@ -1552,8 +1537,6 @@ do { \
             break;
         case HL_TYPE_DOTDOT:
             /* do nothing */
-            break;
-        default:
             break;
         }
 }

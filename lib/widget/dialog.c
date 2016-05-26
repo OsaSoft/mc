@@ -1,7 +1,7 @@
 /*
    Dialog box features module for the Midnight Commander
 
-   Copyright (C) 1994-2014
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    This file is part of the Midnight Commander.
@@ -33,6 +33,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>              /* open() */
 
 #include "lib/global.h"
 
@@ -40,11 +41,9 @@
 #include "lib/skin.h"
 #include "lib/tty/key.h"
 #include "lib/strutil.h"
+#include "lib/widget.h"
 #include "lib/fileloc.h"        /* MC_HISTORY_FILE */
 #include "lib/event.h"          /* mc_event_raise() */
-
-#include "lib/widget.h"
-#include "lib/widget/mouse.h"
 
 /*** global variables ****************************************************************************/
 
@@ -201,8 +200,8 @@ dlg_unfocus (WDialog * h)
 static int
 dlg_find_widget_callback (const void *a, const void *b)
 {
-    const Widget *w = CONST_WIDGET (a);
-    const widget_cb_fn f = b;
+    const Widget *w = WIDGET (a);
+    widget_cb_fn f = (widget_cb_fn) b;
 
     return (w->callback == f) ? 0 : 1;
 }
@@ -243,8 +242,6 @@ do_select_widget (WDialog * h, GList * w, select_dir_t dir)
         case SELECT_PREV:
             h->current = dlg_widget_prev (h, h->current);
             break;
-        default:
-            break;
         }
     }
     while (h->current != w /* && (WIDGET (h->current->data)->options & W_DISABLED) == 0 */ );
@@ -274,7 +271,7 @@ refresh_cmd (void)
 /* --------------------------------------------------------------------------------------------- */
 
 static cb_ret_t
-dlg_execute_cmd (WDialog * h, long command)
+dlg_execute_cmd (WDialog * h, unsigned long command)
 {
     cb_ret_t ret = MSG_HANDLED;
     switch (command)
@@ -343,7 +340,7 @@ dlg_execute_cmd (WDialog * h, long command)
 static cb_ret_t
 dlg_handle_key (WDialog * h, int d_key)
 {
-    long command;
+    unsigned long command;
 
     command = keybind_lookup_keymap_command (dialog_map, d_key);
 
@@ -358,28 +355,13 @@ dlg_handle_key (WDialog * h, int d_key)
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/**
- * This is the low-level mouse handler.
- * It receives a Gpm_Event event and translates it into a higher level protocol.
- */
-static int
-dlg_mouse_translator (Gpm_Event * event, Widget * w)
-{
-    mouse_event_t me;
-
-    me = mouse_translate_event (w, event);
-
-    return mouse_process_event (w, &me);
-}
-
-/* --------------------------------------------------------------------------------------------- */
 
 static int
 dlg_mouse_event (WDialog * h, Gpm_Event * event)
 {
     Widget *wh = WIDGET (h);
 
-    GList *p;
+    GList *p, *first;
 
     /* close the dialog by mouse left click out of dialog area */
     if (mouse_close_dialog && !h->fullscreen && ((event->buttons & GPM_B_LEFT) != 0)
@@ -390,34 +372,35 @@ dlg_mouse_event (WDialog * h, Gpm_Event * event)
         return MOU_NORMAL;
     }
 
-    if (wh->mouse_callback != NULL)
+    if (wh->mouse != NULL)
     {
         int mou;
 
-        mou = dlg_mouse_translator (event, wh);
+        mou = wh->mouse (event, wh);
         if (mou != MOU_UNHANDLED)
             return mou;
     }
 
-    /* send the event to widgets in reverse Z-order */
-    p = g_list_last (h->widgets);
+    first = h->current;
+    p = first;
+
     do
     {
         Widget *w = WIDGET (p->data);
 
-        if ((w->options & W_DISABLED) == 0 && w->mouse_callback != NULL)
+        p = dlg_widget_prev (h, p);
+
+        if ((w->options & W_DISABLED) == 0 && w->mouse != NULL)
         {
             /* put global cursor position to the widget */
             int ret;
 
-            ret = dlg_mouse_translator (event, w);
+            ret = w->mouse (event, w);
             if (ret != MOU_UNHANDLED)
                 return ret;
         }
-
-        p = g_list_previous (p);
     }
-    while (p != NULL);
+    while (p != first);
 
     return MOU_UNHANDLED;
 }
@@ -595,35 +578,10 @@ frontend_dlg_run (WDialog * h)
 static int
 dlg_find_widget_by_id (gconstpointer a, gconstpointer b)
 {
-    const Widget *w = CONST_WIDGET (a);
+    Widget *w = WIDGET (a);
     unsigned long id = GPOINTER_TO_UINT (b);
 
     return w->id == id ? 0 : 1;
-}
-
-/* --------------------------------------------------------------------------------------------- */
-
-static void
-dlg_set_top_or_bottom_widget (void *w, gboolean set_top)
-{
-    Widget *widget = WIDGET (w);
-    WDialog *h = widget->owner;
-    GList *l;
-
-    l = g_list_find (h->widgets, w);
-    if (l == NULL)
-        abort ();               /* widget is not in dialog, this should not happen */
-
-    /* unfocus prevoius widget and focus current one before widget reordering */
-    if (set_top && h->state == DLG_ACTIVE)
-        do_select_widget (h, l, SELECT_EXACT);
-
-    /* widget reordering */
-    h->widgets = g_list_remove_link (h->widgets, l);
-    if (set_top)
-        h->widgets = g_list_concat (h->widgets, l);
-    else
-        h->widgets = g_list_concat (l, h->widgets);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -813,7 +771,7 @@ dlg_default_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm, v
 
 WDialog *
 dlg_create (gboolean modal, int y1, int x1, int lines, int cols,
-            const int *colors, widget_cb_fn callback, widget_mouse_cb_fn mouse_callback,
+            const int *colors, widget_cb_fn callback, mouse_h mouse_handler,
             const char *help_ctx, const char *title, dlg_flags_t flags)
 {
     WDialog *new_d;
@@ -822,7 +780,7 @@ dlg_create (gboolean modal, int y1, int x1, int lines, int cols,
     new_d = g_new0 (WDialog, 1);
     w = WIDGET (new_d);
     widget_init (w, y1, x1, lines, cols, (callback != NULL) ? callback : dlg_default_callback,
-                 mouse_callback);
+                 mouse_handler);
     widget_want_cursor (w, FALSE);
 
     new_d->state = DLG_CONSTRUCT;
@@ -1067,7 +1025,7 @@ find_widget_type (const WDialog * h, widget_cb_fn callback)
 {
     GList *w;
 
-    w = g_list_find_custom (h->widgets, (gconstpointer) callback, dlg_find_widget_callback);
+    w = g_list_find_custom (h->widgets, callback, dlg_find_widget_callback);
 
     return (w == NULL) ? NULL : WIDGET (w->data);
 }
@@ -1112,6 +1070,7 @@ dlg_select_widget (void *w)
 }
 
 /* --------------------------------------------------------------------------------------------- */
+
 /**
  * Set widget at top of widget list and make it current.
  */
@@ -1119,18 +1078,22 @@ dlg_select_widget (void *w)
 void
 dlg_set_top_widget (void *w)
 {
-    dlg_set_top_or_bottom_widget (w, TRUE);
-}
+    Widget *widget = WIDGET (w);
+    WDialog *h = widget->owner;
+    GList *l;
 
-/* --------------------------------------------------------------------------------------------- */
-/**
- * Set widget at bottom of widget list.
- */
+    l = g_list_find (h->widgets, w);
+    if (l == NULL)
+        abort ();               /* widget is not in dialog, this should not happen */
 
-void
-dlg_set_bottom_widget (void *w)
-{
-    dlg_set_top_or_bottom_widget (w, FALSE);
+    /* unfocus prevoius widget and focus current one before widget reordering */
+    if (h->state == DLG_ACTIVE)
+        do_select_widget (h, l, SELECT_EXACT);
+
+    /* widget reordering */
+    h->widgets = g_list_remove_link (h->widgets, l);
+    h->widgets = g_list_concat (h->widgets, l);
+    h->current = l;
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1262,8 +1225,11 @@ dlg_process_event (WDialog * h, int key, Gpm_Event * event)
         if (tty_got_interrupt ())
             if (send_message (h, NULL, MSG_ACTION, CK_Cancel, NULL) != MSG_HANDLED)
                 dlg_execute_cmd (h, CK_Cancel);
+
+        return;
     }
-    else if (key == EV_MOUSE)
+
+    if (key == EV_MOUSE)
         h->mouse_status = dlg_mouse_event (h, event);
     else
         dlg_key_event (h, key);

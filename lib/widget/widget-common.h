@@ -7,14 +7,12 @@
 #define MC__WIDGET_INTERNAL_H
 
 #include "lib/tty/mouse.h"
-#include "lib/widget/mouse.h"   /* mouse_msg_t, mouse_event_t */
 
 /*** typedefs(not structures) and defined constants **********************************************/
 
 #define WIDGET(x) ((Widget *)(x))
-#define CONST_WIDGET(x) ((const Widget *)(x))
 
-#define widget_move(w, _y, _x) tty_gotoyx (CONST_WIDGET(w)->y + (_y), CONST_WIDGET(w)->x + (_x))
+#define widget_move(w, _y, _x) tty_gotoyx (WIDGET(w)->y + (_y), WIDGET(w)->x + (_x))
 /* Sets/clear the specified flag in the options field */
 #define widget_want_cursor(w,i) widget_set_options(w, W_WANT_CURSOR, i)
 #define widget_want_hotkey(w,i) widget_set_options(w, W_WANT_HOTKEY, i)
@@ -35,9 +33,9 @@ typedef enum
     MSG_HOTKEY_HANDLED,         /* A widget has got the hotkey */
     MSG_UNHANDLED_KEY,          /* Key that no widget handled */
     MSG_POST_KEY,               /* The key has been handled */
-    MSG_ACTION,                 /* Send to widget to handle command */
-    MSG_NOTIFY,                 /* Typically sent to dialog to inform it of state-change
-                                 * of listboxes, check- and radiobuttons. */
+    MSG_ACTION,                 /* Send to widget to handle command or
+                                 * state of check- and radiobuttons has changed
+                                 * and listbox current entry has changed */
     MSG_CURSOR,                 /* Sent to widget to position the cursor */
     MSG_IDLE,                   /* The idle state is active */
     MSG_RESIZE,                 /* Screen size has changed */
@@ -62,7 +60,6 @@ typedef enum
 /* Widget options */
 typedef enum
 {
-    W_DEFAULT = (0 << 0),
     W_WANT_HOTKEY = (1 << 1),
     W_WANT_CURSOR = (1 << 2),
     W_WANT_IDLE = (1 << 3),
@@ -95,8 +92,6 @@ typedef enum
 /* Widget callback */
 typedef cb_ret_t (*widget_cb_fn) (Widget * widget, Widget * sender, widget_msg_t msg, int parm,
                                   void *data);
-/* Widget mouse callback */
-typedef void (*widget_mouse_cb_fn) (Widget * w, mouse_msg_t msg, mouse_event_t * event);
 
 /* Every Widget must have this as its first element */
 struct Widget
@@ -107,20 +102,9 @@ struct Widget
     widget_pos_flags_t pos_flags;       /* repositioning flags */
     unsigned int id;            /* Number of the widget, starting with 0 */
     widget_cb_fn callback;
-    widget_mouse_cb_fn mouse_callback;
+    mouse_h mouse;
     void (*set_options) (Widget * w, widget_options_t options, gboolean enable);
-    WDialog *owner;
-    /* Mouse-related fields. */
-    struct
-    {
-        /* Public members: */
-        gboolean forced_capture;        /* Overrides the 'capture' member. Set explicitly by the programmer. */
-
-        /* Implementation details: */
-        gboolean capture;       /* Whether the widget "owns" the mouse. */
-        mouse_msg_t last_msg;   /* The previous event type processed. */
-        int last_buttons_down;
-    } mouse;
+    struct WDialog *owner;
 };
 
 /* structure for label (caption) with hotkey, if original text does not contain
@@ -149,7 +133,7 @@ void hotkey_draw (Widget * w, const hotkey_t hotkey, gboolean focused);
 
 /* widget initialization */
 void widget_init (Widget * w, int y, int x, int lines, int cols,
-                  widget_cb_fn callback, widget_mouse_cb_fn mouse_callback);
+                  widget_cb_fn callback, mouse_h mouse_handler);
 /* Default callback for widgets */
 cb_ret_t widget_default_callback (Widget * w, Widget * sender, widget_msg_t msg, int parm,
                                   void *data);

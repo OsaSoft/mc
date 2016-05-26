@@ -2,7 +2,7 @@
 
 /* Background support.
 
-   Copyright (C) 1996-2016
+   Copyright (C) 1996-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -42,6 +42,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>           /* waitpid() */
+#include <fcntl.h>
 
 #include "lib/global.h"
 
@@ -76,7 +77,7 @@ static int parent_fd;
 /* File descriptor for messages from our parent */
 static int from_parent_fd;
 
-TaskList *task_list = NULL;
+struct TaskList *task_list = NULL;
 
 static int background_attention (int fd, void *closure);
 
@@ -199,7 +200,7 @@ background_attention (int fd, void *closure)
         int (*non_have_ctx3) (file_op_context_t *, int, char *, char *, char *);
         int (*non_have_ctx4) (file_op_context_t *, int, char *, char *, char *, char *);
 
-        char *(*ret_str0) (void);
+        char *(*ret_str0) ();
         char *(*ret_str1) (char *);
         char *(*ret_str2) (char *, char *);
         char *(*ret_str3) (char *, char *, char *);
@@ -211,7 +212,7 @@ background_attention (int fd, void *closure)
     int argc, i, status;
     char *data[MAXCALLARGS];
     ssize_t bytes, ret;
-    TaskList *p;
+    struct TaskList *p;
     int to_child_fd = -1;
     enum ReturnType type;
 
@@ -256,7 +257,7 @@ background_attention (int fd, void *closure)
 
     if (have_ctx)
     {
-        if (read (fd, ctx, sizeof (*ctx)) != sizeof (*ctx))
+        if (read (fd, ctx, sizeof (file_op_context_t)) != sizeof (file_op_context_t))
         {
             return reading_failed (-1, data);
         }
@@ -315,8 +316,6 @@ background_attention (int fd, void *closure)
             case 4:
                 result = routine.have_ctx4 (Background, data[0], data[1], data[2], data[3]);
                 break;
-            default:
-                break;
             }
         else
             switch (argc)
@@ -337,14 +336,12 @@ background_attention (int fd, void *closure)
                 result =
                     routine.non_have_ctx4 (ctx, Background, data[0], data[1], data[2], data[3]);
                 break;
-            default:
-                break;
             }
 
         /* Send the result code and the value for shared variables */
-        ret = write (to_child_fd, &result, sizeof (result));
+        ret = write (to_child_fd, &result, sizeof (int));
         if (have_ctx && to_child_fd != -1)
-            ret = write (to_child_fd, ctx, sizeof (*ctx));
+            ret = write (to_child_fd, ctx, sizeof (file_op_context_t));
     }
     else if (type == Return_String)
     {
@@ -416,12 +413,12 @@ parent_call_header (void *routine, int argc, enum ReturnType type, file_op_conte
     have_ctx = (ctx != NULL);
 
     ret = write (parent_fd, &routine, sizeof (routine));
-    ret = write (parent_fd, &argc, sizeof (argc));
+    ret = write (parent_fd, &argc, sizeof (int));
     ret = write (parent_fd, &type, sizeof (type));
     ret = write (parent_fd, &have_ctx, sizeof (have_ctx));
 
     if (have_ctx)
-        ret = write (parent_fd, ctx, sizeof (*ctx));
+        ret = write (parent_fd, ctx, sizeof (file_op_context_t));
     (void) ret;
 }
 
@@ -442,13 +439,13 @@ parent_va_call (void *routine, gpointer data, int argc, va_list ap)
 
         len = va_arg (ap, int);
         value = va_arg (ap, void *);
-        ret = write (parent_fd, &len, sizeof (len));
+        ret = write (parent_fd, &len, sizeof (int));
         ret = write (parent_fd, value, len);
     }
 
-    ret = read (from_parent_fd, &i, sizeof (i));
+    ret = read (from_parent_fd, &i, sizeof (int));
     if (ctx)
-        ret = read (from_parent_fd, ctx, sizeof (*ctx));
+        ret = read (from_parent_fd, ctx, sizeof (file_op_context_t));
 
     (void) ret;
     return i;
@@ -470,14 +467,14 @@ parent_va_call_string (void *routine, int argc, va_list ap)
 
         len = va_arg (ap, int);
         value = va_arg (ap, void *);
-        if ((write (parent_fd, &len, sizeof (len)) != sizeof (len)) ||
+        if ((write (parent_fd, &len, sizeof (int)) != sizeof (int)) ||
             (write (parent_fd, value, len) != len))
         {
             return NULL;
         }
     }
 
-    if (read (from_parent_fd, &i, sizeof (i)) != sizeof (i))
+    if (read (from_parent_fd, &i, sizeof (int)) != sizeof (int))
         return NULL;
     if (!i)
         return NULL;

@@ -2,7 +2,7 @@
    Internal file viewer for the Midnight Commander
    Functions for datasources
 
-   Copyright (C) 1994-2016
+   Copyright (C) 1994-2015
    Free Software Foundation, Inc.
 
    Written by:
@@ -74,7 +74,7 @@
 /* --------------------------------------------------------------------------------------------- */
 
 static void
-mcview_set_datasource_stdio_pipe (WView * view, mc_pipe_t * p)
+mcview_set_datasource_stdio_pipe (mcview_t * view, mc_pipe_t * p)
 {
     p->out.len = MC_PIPE_BUFSIZE;
     p->out.null_term = FALSE;
@@ -92,7 +92,7 @@ mcview_set_datasource_stdio_pipe (WView * view, mc_pipe_t * p)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_none (WView * view)
+mcview_set_datasource_none (mcview_t * view)
 {
     view->datasource = DS_NONE;
 }
@@ -100,7 +100,7 @@ mcview_set_datasource_none (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 off_t
-mcview_get_filesize (WView * view)
+mcview_get_filesize (mcview_t * view)
 {
     switch (view->datasource)
     {
@@ -124,7 +124,7 @@ mcview_get_filesize (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_update_filesize (WView * view)
+mcview_update_filesize (mcview_t * view)
 {
     if (view->datasource == DS_FILE)
     {
@@ -137,7 +137,7 @@ mcview_update_filesize (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-mcview_get_ptr_file (WView * view, off_t byte_index)
+mcview_get_ptr_file (mcview_t * view, off_t byte_index)
 {
 #ifdef HAVE_ASSERT_H
     assert (view->datasource == DS_FILE);
@@ -151,12 +151,17 @@ mcview_get_ptr_file (WView * view, off_t byte_index)
 
 /* --------------------------------------------------------------------------------------------- */
 
-gboolean
-mcview_get_utf (WView * view, off_t byte_index, int *ch, int *ch_len)
+int
+mcview_get_utf (mcview_t * view, off_t byte_index, int *char_length, gboolean * result)
 {
     gchar *str = NULL;
-    int res;
+    int res = -1;
+    gunichar ch;
+    gchar *next_ch = NULL;
     gchar utf8buf[UTF8_CHAR_LEN + 1];
+
+    *char_length = 0;
+    *result = FALSE;
 
     switch (view->datasource)
     {
@@ -171,14 +176,11 @@ mcview_get_utf (WView * view, off_t byte_index, int *ch, int *ch_len)
         str = mcview_get_ptr_string (view, byte_index);
         break;
     case DS_NONE:
-    default:
         break;
     }
 
-    *ch = 0;
-
     if (str == NULL)
-        return FALSE;
+        return 0;
 
     res = g_utf8_get_char_validated (str, -1);
 
@@ -186,7 +188,6 @@ mcview_get_utf (WView * view, off_t byte_index, int *ch, int *ch_len)
     {
         /* Retry with explicit bytes to make sure it's not a buffer boundary */
         int i;
-
         for (i = 0; i < UTF8_CHAR_LEN; i++)
         {
             if (mcview_get_byte (view, byte_index + i, &res))
@@ -204,26 +205,24 @@ mcview_get_utf (WView * view, off_t byte_index, int *ch, int *ch_len)
 
     if (res < 0)
     {
-        *ch = (unsigned char) (*str);
-        *ch_len = 1;
+        ch = *str;
+        *char_length = 1;
     }
     else
     {
-        gchar *next_ch = NULL;
-
-        *ch = res;
+        ch = res;
         /* Calculate UTF-8 char length */
         next_ch = g_utf8_next_char (str);
-        *ch_len = next_ch - str;
+        *char_length = next_ch - str;
     }
-
-    return TRUE;
+    *result = TRUE;
+    return ch;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 char *
-mcview_get_ptr_string (WView * view, off_t byte_index)
+mcview_get_ptr_string (mcview_t * view, off_t byte_index)
 {
 #ifdef HAVE_ASSERT_H
     assert (view->datasource == DS_STRING);
@@ -236,7 +235,7 @@ mcview_get_ptr_string (WView * view, off_t byte_index)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_get_byte_string (WView * view, off_t byte_index, int *retval)
+mcview_get_byte_string (mcview_t * view, off_t byte_index, int *retval)
 {
     char *p;
 
@@ -248,14 +247,14 @@ mcview_get_byte_string (WView * view, off_t byte_index, int *retval)
         return FALSE;
 
     if (retval != NULL)
-        *retval = (unsigned char) (*p);
+        *retval = *p;
     return TRUE;
 }
 
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_get_byte_none (WView * view, off_t byte_index, int *retval)
+mcview_get_byte_none (mcview_t * view, off_t byte_index, int *retval)
 {
     (void) &view;
     (void) byte_index;
@@ -272,7 +271,7 @@ mcview_get_byte_none (WView * view, off_t byte_index, int *retval)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_byte (WView * view, off_t offset, byte b)
+mcview_set_byte (mcview_t * view, off_t offset, byte b)
 {
     (void) &b;
 #ifndef HAVE_ASSERT_H
@@ -289,7 +288,7 @@ mcview_set_byte (WView * view, off_t offset, byte b)
 
 /*static */
 void
-mcview_file_load_data (WView * view, off_t byte_index)
+mcview_file_load_data (mcview_t * view, off_t byte_index)
 {
     off_t blockoffset;
     ssize_t res;
@@ -340,7 +339,7 @@ mcview_file_load_data (WView * view, off_t byte_index)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_close_datasource (WView * view)
+mcview_close_datasource (mcview_t * view)
 {
     switch (view->datasource)
     {
@@ -379,7 +378,7 @@ mcview_close_datasource (WView * view)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_file (WView * view, int fd, const struct stat *st)
+mcview_set_datasource_file (mcview_t * view, int fd, const struct stat *st)
 {
     view->datasource = DS_FILE;
     view->ds_file_fd = fd;
@@ -393,15 +392,15 @@ mcview_set_datasource_file (WView * view, int fd, const struct stat *st)
 /* --------------------------------------------------------------------------------------------- */
 
 gboolean
-mcview_load_command_output (WView * view, const char *command)
+mcview_load_command_output (mcview_t * view, const char *command)
 {
-    mc_pipe_t *p;
+    mc_pipe_t *pipe;
     GError *error = NULL;
 
     mcview_close_datasource (view);
 
-    p = mc_popen (command, &error);
-    if (p == NULL)
+    pipe = mc_popen (command, &error);
+    if (pipe == NULL)
     {
         mcview_display (view);
         mcview_show_error (view, error->message);
@@ -410,7 +409,7 @@ mcview_load_command_output (WView * view, const char *command)
     }
 
     /* Check if filter produced any output */
-    mcview_set_datasource_stdio_pipe (view, p);
+    mcview_set_datasource_stdio_pipe (view, pipe);
     if (!mcview_get_byte (view, 0, NULL))
     {
         mcview_close_datasource (view);
@@ -424,7 +423,7 @@ mcview_load_command_output (WView * view, const char *command)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_vfs_pipe (WView * view, int fd)
+mcview_set_datasource_vfs_pipe (mcview_t * view, int fd)
 {
 #ifdef HAVE_ASSERT_H
     assert (fd != -1);
@@ -438,7 +437,7 @@ mcview_set_datasource_vfs_pipe (WView * view, int fd)
 /* --------------------------------------------------------------------------------------------- */
 
 void
-mcview_set_datasource_string (WView * view, const char *s)
+mcview_set_datasource_string (mcview_t * view, const char *s)
 {
     view->datasource = DS_STRING;
     view->ds_string_len = strlen (s);

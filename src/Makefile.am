@@ -8,10 +8,6 @@ if USE_DIFF
 SUBDIRS += diffviewer
 endif
 
-if ENABLE_SUBSHELL
-SUBDIRS += subshell
-endif
-
 noinst_LTLIBRARIES = libinternal.la
 
 AM_CPPFLAGS = \
@@ -26,7 +22,7 @@ SUBDIRS += consaver
 AM_CPPFLAGS += -DSAVERDIR=\""$(pkglibexecdir)"\"
 endif
 
-AM_CPPFLAGS += -I$(top_srcdir) $(GLIB_CFLAGS)
+AM_CPPFLAGS += -I$(top_srcdir) $(GLIB_CFLAGS) $(PCRE_CPPFLAGS)
 
 localedir = $(datadir)/locale
 pkglibexecdir = $(libexecdir)/@PACKAGE@
@@ -41,15 +37,11 @@ if USE_DIFF
 DIFFLIB = diffviewer/libdiffviewer.la
 endif
 
-if ENABLE_SUBSHELL
-SUBSHELLLIB = subshell/libsubshell.la
-endif
-
 libinternal_la_LIBADD = \
 	filemanager/libmcfilemanager.la \
 	vfs/libmc-vfs.la \
 	viewer/libmcviewer.la \
-	$(DIFFLIB) $(EDITLIB) $(SUBSHELLLIB)
+	$(DIFFLIB) $(EDITLIB)
 
 mc_LDADD = \
 	libinternal.la \
@@ -84,6 +76,9 @@ if CHARSET
     libinternal_la_SOURCES += selcodepage.c selcodepage.h
 endif
 
+if ENABLE_SUBSHELL
+    libinternal_la_SOURCES += subshell.c subshell.h
+endif
 
 if ENABLE_BACKGROUND
     libinternal_la_SOURCES += background.c background.h

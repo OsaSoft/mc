@@ -129,7 +129,7 @@ typedef struct
     gboolean preserve_uidgid;
 
     /* The bits to preserve in created files' modes on file copy */
-    mode_t umask_kill;
+    int umask_kill;
 
     /* The mask of files to actually operate on */
     char *dest_mask;
